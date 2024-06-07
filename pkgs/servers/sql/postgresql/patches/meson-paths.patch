@@ -1,0 +1,28 @@
+This adapts paths-for-split-outputs.patch and paths-with-postgresql-suffix.patch
+for the meson build.
+
+---
+--- a/meson.build
++++ b/meson.build
+@@ -477,18 +477,18 @@ dir_prefix_contains_pg = (dir_prefix.contains('pgsql') or dir_prefix.contains('p
+ dir_bin = get_option('bindir')
+ 
+ dir_data = get_option('datadir')
+-if not (dir_prefix_contains_pg or dir_data.contains('pgsql') or dir_data.contains('postgres'))
++if not (dir_data.contains('pgsql') or dir_data.contains('postgres'))
+   dir_data = dir_data / pkg
+ endif
+ 
+ dir_sysconf = get_option('sysconfdir')
+-if not (dir_prefix_contains_pg or dir_sysconf.contains('pgsql') or dir_sysconf.contains('postgres'))
++if not (dir_sysconf.contains('pgsql') or dir_sysconf.contains('postgres'))
+   dir_sysconf = dir_sysconf / pkg
+ endif
+ 
+ dir_lib = get_option('libdir')
+ 
+-dir_lib_pkg = dir_lib
++dir_lib_pkg = dir_prefix / 'lib'
+ if not (dir_prefix_contains_pg or dir_lib_pkg.contains('pgsql') or dir_lib_pkg.contains('postgres'))
+   dir_lib_pkg = dir_lib_pkg / pkg
+ endif

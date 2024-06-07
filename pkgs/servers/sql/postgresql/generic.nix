@@ -8,6 +8,11 @@ let
       , linux-pam
       , removeReferencesTo
 
+      # meson build
+      , fetchFromGitHub
+      , bison, flex, meson, ninja, perl, perlPackages
+      , docbook_xml_dtd_45, docbook-xsl-nons, libxslt
+
       , systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs
       , enableSystemd ? null
       , gssSupport ? with stdenv.hostPlatform; !isWindows && !isStatic
@@ -46,21 +51,108 @@ let
     pname = "postgresql";
 
     stdenv' =
-      if jitSupport then
+      if jitSupport && !stdenv.isDarwin then
         overrideCC llvmPackages.stdenv (llvmPackages.stdenv.cc.override {
           # LLVM bintools are not used by default, but are needed to make -flto work below.
           bintools = llvmPackages.bintools;
         })
       else
         stdenv;
-  in stdenv'.mkDerivation (finalAttrs: {
-    inherit version;
-    pname = pname + lib.optionalString jitSupport "-jit";
+  in stdenv'.mkDerivation (finalAttrs: (if atLeast "16" then {
+    # meson build v16+
+
+    # Fetching via GitHub because the tarballs are not maintainer-clean, which
+    # breaks "meson setup".
+    src = let
+      major = lib.versions.major version;
+      minor = lib.versions.minor version;
+    in fetchFromGitHub {
+      owner = "postgres";
+      repo = "postgres";
+      rev = "REL_${major}_${minor}";
+      inherit hash;
+    };
+
+    nativeBuildInputs = [
+      bison
+      docbook-xsl-nons
+      docbook_xml_dtd_45
+      flex
+      libxml2
+      libxslt
+      makeWrapper
+      meson
+      ninja
+      perl
+      perlPackages.IPCRun
+      pkg-config
+      removeReferencesTo
+    ]
+      ++ lib.optionals jitSupport [ llvmPackages.llvm.dev nukeReferences ];
+
+    mesonBuildType = "debugoptimized";
+    mesonAutoFeatures = "auto";
+
+    mesonFlags = let inherit (lib) mesonBool mesonEnable mesonOption; in [
+      (mesonEnable "gssapi" gssSupport)
+      (mesonEnable "llvm" jitSupport)
+      (mesonEnable "plperl" false)
+      (mesonEnable "plpython" pythonSupport)
+      (mesonBool "spinlocks" (!stdenv.hostPlatform.isRiscV))
+      (mesonOption "sysconfdir" "/etc")
+      (mesonOption "system_tzdata" "${tzdata}/share/zoneinfo")
+      (mesonOption "uuid" "e2fs")
+    ];
+
+    ninjaFlags = ["all" "docs"];
+
+    # One of the icu tests depends on setlocale(LC_COLLATE, ...) returning an error - but
+    # collations are not implemented on musl, and thus setlocale() does not throw, yet.
+    mesonCheckFlags = lib.optionals stdenv'.hostPlatform.isMusl [ "--no-suite" "icu" ];
+
+    dontUseMesonInstall = true;
+    installTargets = [ "install" "install-docs" ];
+  } else {
+    # autotools build up to v15
 
     src = fetchurl {
       url = "mirror://postgresql/source/v${version}/${pname}-${version}.tar.bz2";
       inherit hash;
     };
+
+    nativeBuildInputs = [
+      makeWrapper
+      pkg-config
+      removeReferencesTo
+    ]
+      ++ lib.optionals jitSupport [ llvmPackages.llvm.dev nukeReferences ];
+
+    configureFlags = [
+      "--with-openssl"
+      "--with-libxml"
+      "--with-icu"
+      "--sysconfdir=/etc"
+      "--with-system-tzdata=${tzdata}/share/zoneinfo"
+      "--enable-debug"
+      (lib.optionalString systemdSupport' "--with-systemd")
+      "--with-uuid=e2fs"
+    ] ++ lib.optionals lz4Enabled [ "--with-lz4" ]
+      ++ lib.optionals zstdEnabled [ "--with-zstd" ]
+      ++ lib.optionals gssSupport [ "--with-gssapi" ]
+      ++ lib.optionals pythonSupport [ "--with-python" ]
+      ++ lib.optionals jitSupport [ "--with-llvm" ]
+      ++ lib.optionals stdenv'.isLinux [ "--with-pam" ];
+
+    buildFlags = [ "world" ];
+
+    # autodetection doesn't seem to able to find this, but it's there.
+    checkTarget = "check-world";
+
+    installTargets = [ "install-world" ];
+  }) // {
+    # shared for both autotools and meson
+    inherit version;
+    pname = pname + lib.optionalString jitSupport "-jit";
 
     __structuredAttrs = true;
 
@@ -106,18 +198,9 @@ let
       ++ lib.optionals stdenv'.isLinux [ linux-pam ]
       ++ lib.optionals stdenv'.isDarwin [ e2fsprogs ];
 
-    nativeBuildInputs = [
-      makeWrapper
-      pkg-config
-      removeReferencesTo
-    ]
-      ++ lib.optionals jitSupport [ llvmPackages.llvm.dev nukeReferences ];
-
     enableParallelBuilding = true;
 
     separateDebugInfo = true;
-
-    buildFlags = [ "world" ];
 
     # libpgcommon.a and libpgport.a contain all paths returned by pg_config and are linked
     # into all binaries. However, almost no binaries actually use those paths. The following
@@ -126,29 +209,9 @@ let
     # and allows splitting them cleanly.
     env.CFLAGS = "-fdata-sections -ffunction-sections"
       + (if stdenv'.cc.isClang then " -flto" else " -fmerge-constants -Wl,--gc-sections")
-      + lib.optionalString (stdenv'.isDarwin && jitSupport) " -fuse-ld=lld"
       # Makes cross-compiling work when xml2-config can't be executed on the host.
       # Fixed upstream in https://github.com/postgres/postgres/commit/0bc8cebdb889368abdf224aeac8bc197fe4c9ae6
       + lib.optionalString (olderThan "13") " -I${libxml2.dev}/include/libxml2";
-
-    configureFlags = [
-      "--with-openssl"
-      "--with-libxml"
-      "--with-icu"
-      "--sysconfdir=/etc"
-      "--with-system-tzdata=${tzdata}/share/zoneinfo"
-      "--enable-debug"
-      (lib.optionalString systemdSupport' "--with-systemd")
-      "--with-uuid=e2fs"
-    ] ++ lib.optionals lz4Enabled [ "--with-lz4" ]
-      ++ lib.optionals zstdEnabled [ "--with-zstd" ]
-      ++ lib.optionals gssSupport [ "--with-gssapi" ]
-      ++ lib.optionals pythonSupport [ "--with-python" ]
-      ++ lib.optionals jitSupport [ "--with-llvm" ]
-      ++ lib.optionals stdenv'.isLinux [ "--with-pam" ]
-      # This could be removed once the upstream issue is resolved:
-      # https://postgr.es/m/flat/427c7c25-e8e1-4fc5-a1fb-01ceff185e5b%40technowledgy.de
-      ++ lib.optionals (stdenv'.isDarwin && atLeast "16") [ "LDFLAGS_EX_BE=-Wl,-export_dynamic" ];
 
     patches = [
       (if atLeast "16" then ./patches/relative-to-symlinks-16+.patch else ./patches/relative-to-symlinks.patch)
@@ -173,9 +236,9 @@ let
       (if atLeast "13" then ./patches/socketdir-in-run-13+.patch else ./patches/socketdir-in-run.patch)
     ] ++ lib.optionals (stdenv'.isDarwin && olderThan "16") [
       ./patches/export-dynamic-darwin-15-.patch
+    ] ++ lib.optionals (atLeast "16") [
+      ./patches/meson-paths.patch
     ];
-
-    installTargets = [ "install-world" ];
 
     postPatch = ''
       substituteInPlace "src/Makefile.global.in" --subst-var out
@@ -236,8 +299,6 @@ let
       '';
 
     doCheck = !stdenv'.isDarwin;
-    # autodetection doesn't seem to able to find this, but it's there.
-    checkTarget = "check-world";
 
     passthru = let
       this = self.callPackage generic args;
