@@ -8,8 +8,7 @@ let
       , linux-pam
       , removeReferencesTo
 
-      # This is important to obtain a version of `libpq` that does not depend on systemd.
-      , systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs && !stdenv.hostPlatform.isStatic
+      , systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs
       , enableSystemd ? null
       , gssSupport ? with stdenv.hostPlatform; !isWindows && !isStatic
 
