@@ -95,7 +95,9 @@ let
 
     mesonFlags = let inherit (lib) mesonBool mesonEnable mesonOption; in [
       (mesonEnable "gssapi" gssSupport)
+      (mesonEnable "icu" (!stdenv'.hostPlatform.isStatic))
       (mesonEnable "llvm" jitSupport)
+      (mesonEnable "pam" (stdenv'.isLinux && !stdenv'.hostPlatform.isStatic))
       (mesonEnable "plperl" false)
       (mesonEnable "plpython" pythonSupport)
       (mesonBool "spinlocks" (!stdenv.hostPlatform.isRiscV))
@@ -108,7 +110,20 @@ let
 
     # One of the icu tests depends on setlocale(LC_COLLATE, ...) returning an error - but
     # collations are not implemented on musl, and thus setlocale() does not throw, yet.
-    mesonCheckFlags = lib.optionals stdenv'.hostPlatform.isMusl [ "--no-suite" "icu" ];
+    mesonCheckFlags = lib.optionals stdenv'.hostPlatform.isMusl [ "--no-suite" "icu" ]
+      # Those tests all fail with segmentation faults of the postgres binary at point.
+      ++ lib.optionals stdenv'.hostPlatform.isStatic [
+        "--no-suite" "bloom"
+        "--no-suite" "brin"
+        "--no-suite" "commit_ts"
+        "--no-suite" "dblink"
+        "--no-suite" "pg_basebackup"
+        "--no-suite" "pg_ctl"
+        "--no-suite" "pg_rewind"
+        "--no-suite" "postgres_fdw"
+        "--no-suite" "recovery"
+        "--no-suite" "subscription"
+      ];
 
     dontUseMesonInstall = true;
     installTargets = [ "install" "install-docs" ];
@@ -158,7 +173,8 @@ let
 
     hardeningEnable = lib.optionals (!stdenv'.cc.isClang) [ "pie" ];
 
-    outputs = [ "out" "dev" "doc" "lib" "man" ];
+    outputs = [ "out" "dev" "doc" "man" ]
+      ++ lib.optionals (!stdenv.hostPlatform.isStatic) [ "lib" ];
     outputChecks.out = {
       disallowedReferences = [ "dev" "doc" "man" ];
       disallowedRequisites = [
@@ -185,17 +201,17 @@ let
       readline
       openssl
       (libxml2.override {enableHttp = true;})
-      icu
       libuuid
     ]
       ++ lib.optionals (olderThan "13") [ libxcrypt ]
+      ++ lib.optionals (!stdenv'.hostPlatform.isStatic) [ icu ]
       ++ lib.optionals jitSupport [ llvmPackages.llvm ]
       ++ lib.optionals lz4Enabled [ lz4 ]
       ++ lib.optionals zstdEnabled [ zstd ]
       ++ lib.optionals systemdSupport' [ systemdLibs ]
       ++ lib.optionals pythonSupport [ python3 ]
       ++ lib.optionals gssSupport [ libkrb5 ]
-      ++ lib.optionals stdenv'.isLinux [ linux-pam ]
+      ++ lib.optionals (stdenv'.isLinux && !stdenv'.hostPlatform.isStatic) [ linux-pam ]
       ++ lib.optionals stdenv'.isDarwin [ e2fsprogs ];
 
     enableParallelBuilding = true;
@@ -209,6 +225,8 @@ let
     # and allows splitting them cleanly.
     env.CFLAGS = "-fdata-sections -ffunction-sections"
       + (if stdenv'.cc.isClang then " -flto" else " -fmerge-constants -Wl,--gc-sections")
+      # Prevents lipq from accessing backend code
+      + lib.optionalString stdenv'.hostPlatform.isStatic " -Wl,-Bsymbolic"
       # Makes cross-compiling work when xml2-config can't be executed on the host.
       # Fixed upstream in https://github.com/postgres/postgres/commit/0bc8cebdb889368abdf224aeac8bc197fe4c9ae6
       + lib.optionalString (olderThan "13") " -I${libxml2.dev}/include/libxml2";
@@ -238,6 +256,7 @@ let
       ./patches/export-dynamic-darwin-15-.patch
     ] ++ lib.optionals (atLeast "16") [
       ./patches/meson-paths.patch
+      ./patches/meson-static.patch
     ];
 
     postPatch = ''
@@ -271,18 +290,6 @@ let
         # load other shared modules.
         remove-references-to -t "$dev" -t "$doc" -t "$man" "$out/bin/postgres"
 
-        if [ -z "''${dontDisableStatic:-}" ]; then
-          # Remove static libraries in case dynamic are available.
-          for i in $lib/lib/*.a; do
-            name="$(basename "$i")"
-            ext="${stdenv'.hostPlatform.extensions.sharedLibrary}"
-            if [ -e "$lib/lib/''${name%.a}$ext" ] || [ -e "''${i%.a}$ext" ]; then
-              rm "$i"
-            fi
-          done
-        fi
-        # The remaining static libraries are libpgcommon.a, libpgport.a and related.
-        # Those are only used when building e.g. extensions, so go to $dev.
         moveToOutput "lib/*.a" "$dev"
       '' + lib.optionalString jitSupport ''
         # In the case of JIT support, prevent useless dependencies on header files
