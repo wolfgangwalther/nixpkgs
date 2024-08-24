@@ -3,7 +3,7 @@ let
   generic =
       # dependencies
       { stdenv, lib, fetchurl, fetchpatch, makeWrapper
-      , glibc, zlib, readline, openssl, icu, lz4, zstd, systemdLibs, libossp_uuid
+      , glibc, zlib, readline, openssl, icu, lz4, zstd, systemdLibs, libuuid, e2fsprogs
       , pkg-config, libxml2, tzdata, libkrb5, substituteAll, darwin
       , linux-pam
       , removeReferencesTo
@@ -95,6 +95,7 @@ let
       openssl
       (libxml2.override {enableHttp = true;})
       icu
+      libuuid
     ]
       ++ lib.optionals (olderThan "13") [ libxcrypt ]
       ++ lib.optionals jitSupport [ llvmPackages.llvm ]
@@ -104,7 +105,7 @@ let
       ++ lib.optionals pythonSupport [ python3 ]
       ++ lib.optionals gssSupport [ libkrb5 ]
       ++ lib.optionals stdenv'.isLinux [ linux-pam ]
-      ++ lib.optionals (!stdenv'.isDarwin) [ libossp_uuid ];
+      ++ lib.optionals stdenv'.isDarwin [ e2fsprogs ];
 
     nativeBuildInputs = [
       makeWrapper
@@ -139,7 +140,7 @@ let
       "--with-system-tzdata=${tzdata}/share/zoneinfo"
       "--enable-debug"
       (lib.optionalString systemdSupport' "--with-systemd")
-      (if stdenv'.isDarwin then "--with-uuid=e2fs" else "--with-ossp-uuid")
+      "--with-uuid=e2fs"
     ] ++ lib.optionals lz4Enabled [ "--with-lz4" ]
       ++ lib.optionals zstdEnabled [ "--with-zstd" ]
       ++ lib.optionals gssSupport [ "--with-gssapi" ]
