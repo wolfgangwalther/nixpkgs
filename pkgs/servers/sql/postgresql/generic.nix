@@ -161,6 +161,11 @@ let
         src = ./patches/locale-binary-path.patch;
         locale = "${if stdenv.isDarwin then darwin.adv_cmds else lib.getBin stdenv.cc.libc}/bin/locale";
       })
+
+      # TODO: Remove this with the next set of minor releases
+      (if atLeast "14" then ./patches/tzdata-14+.patch
+       else if atLeast "13" then ./patches/tzdata-13.patch
+       else ./patches/tzdata-12.patch)
     ] ++ lib.optionals stdenv'.hostPlatform.isMusl (
       # Using fetchurl instead of fetchpatch on purpose: https://github.com/NixOS/nixpkgs/issues/240141
       map fetchurl (lib.attrValues muslPatches)
