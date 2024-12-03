@@ -43,7 +43,7 @@ let
      Nixpkgs from being evaluated again and again for every
      job/platform pair. */
   mkPkgsFor = crossSystem: let
-    packageSet' = args: packageSet (args // { inherit crossSystem; } // nixpkgsArgs);
+    packageSet' = args: packageSet ({ inherit crossSystem; } // args // nixpkgsArgs);
 
     pkgs_x86_64_linux = packageSet' { system = "x86_64-linux"; };
     pkgs_i686_linux = packageSet' { system = "i686-linux"; };
@@ -57,6 +57,10 @@ let
     pkgs_i686_freebsd = packageSet' { system = "i686-freebsd"; };
     pkgs_i686_cygwin = packageSet' { system = "i686-cygwin"; };
     pkgs_x86_64_cygwin = packageSet' { system = "x86_64-cygwin"; };
+    pkgs_x86_64_linux_pkgsStatic = packageSet' {
+      system = "x86_64-linux";
+      crossSystem = { config = "x86_64-unknown-linux-musl"; isStatic = true; } // crossSystem;
+    };
 
     in system:
       if system == "x86_64-linux" then pkgs_x86_64_linux
@@ -71,6 +75,7 @@ let
       else if system == "i686-freebsd" then pkgs_i686_freebsd
       else if system == "i686-cygwin" then pkgs_i686_cygwin
       else if system == "x86_64-cygwin" then pkgs_x86_64_cygwin
+      else if system == "x86_64-linux.pkgsStatic" then pkgs_x86_64_linux_pkgsStatic
       else abort "unsupported system type: ${system}";
 
   pkgsFor = pkgsForCross null;
