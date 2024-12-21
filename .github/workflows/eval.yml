@@ -86,6 +86,7 @@ jobs:
         system: ${{ fromJSON(needs.attrs.outputs.systems) }}
       include:
         # The following are not in ci/supportedSystems.nix, because we're not building them on hydra.
+        - system: x86_64-linux.pkgsLLVM
         - system: x86_64-linux.pkgsStatic
     steps:
       - name: Download the list of all attributes
