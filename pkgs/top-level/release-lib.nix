@@ -57,15 +57,6 @@ let
     pkgs_i686_freebsd = packageSet' { system = "i686-freebsd"; };
     pkgs_i686_cygwin = packageSet' { system = "i686-cygwin"; };
     pkgs_x86_64_cygwin = packageSet' { system = "x86_64-cygwin"; };
-    # The following currently are for ci/eval only, not for hydra.
-    pkgs_x86_64_linux_pkgsLLVM = packageSet' {
-      system = "x86_64-linux";
-      crossSystem = { useLLVM = true; linker = "lld"; } // crossSystem;
-    };
-    pkgs_x86_64_linux_pkgsStatic = packageSet' {
-      system = "x86_64-linux";
-      crossSystem = { config = "x86_64-unknown-linux-musl"; isStatic = true; } // crossSystem;
-    };
 
     in system:
       if system == "x86_64-linux" then pkgs_x86_64_linux
@@ -80,8 +71,9 @@ let
       else if system == "i686-freebsd" then pkgs_i686_freebsd
       else if system == "i686-cygwin" then pkgs_i686_cygwin
       else if system == "x86_64-cygwin" then pkgs_x86_64_cygwin
-      else if system == "x86_64-linux.pkgsLLVM" then pkgs_x86_64_linux_pkgsLLVM
-      else if system == "x86_64-linux.pkgsStatic" then pkgs_x86_64_linux_pkgsStatic
+      # The following currently are for ci/eval only, not for hydra.
+      else if system == "x86_64-linux.pkgsLLVM" then pkgs_x86_64_linux.pkgsLLVM
+      else if system == "x86_64-linux.pkgsStatic" then pkgs_x86_64_linux.pkgsStatic
       else abort "unsupported system type: ${system}";
 
   pkgsFor = pkgsForCross null;
