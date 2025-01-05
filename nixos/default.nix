@@ -15,7 +15,7 @@ in
 {
   inherit (eval) pkgs config options;
 
-  system = eval.config.system.build.toplevel;
+     system = eval.config.system.build.toplevel;
 
   inherit (eval.config.system.build) vm vmWithBootLoader;
 }

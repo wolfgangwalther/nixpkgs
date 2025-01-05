@@ -65,17 +65,17 @@
    file located in the root of the Nixpkgs repo.
 */
 {
-  _0b11stan = {
-    name = "Tristan Auvinet Pinaudeau";
-    email = "tristan@tic.sh";
-    github = "0b11stan";
-    githubId = 27831931;
-  };
   _0david0mp = {
     email = "davidmrpr@proton.me";
     github = "0david0mp";
     githubId = 54892055;
     name = "David mp";
+  };
+  _0b11stan = {
+    name = "Tristan Auvinet Pinaudeau";
+    email = "tristan@tic.sh";
+    github = "0b11stan";
+    githubId = 27831931;
   };
   _0nyr = {
     email = "onyr.maintainer@gmail.com";
