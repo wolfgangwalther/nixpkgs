@@ -1,5 +1,5 @@
 # NixOS Manual {#book-nixos-manual}
-## Version @NIXOS_VERSION@
+## Version @NIXOS_VERSION@ test
 
 <!--
   this is the top-level structure file for the nixos manual.

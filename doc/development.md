@@ -1,5 +1,7 @@
 # Development of Nixpkgs {#part-development}
 
+Hello
+
 This section shows you how Nixpkgs is being developed and how you can interact with the contributors and the latest updates.
 If you are interested in contributing yourself, see [CONTRIBUTING.md](https://github.com/NixOS/nixpkgs/blob/master/CONTRIBUTING.md).
 
