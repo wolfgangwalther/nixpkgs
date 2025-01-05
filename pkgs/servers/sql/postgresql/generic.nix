@@ -330,6 +330,7 @@ let
           moveToOutput "bin/ecpg" "$dev"
           moveToOutput "lib/pgxs" "$dev"
 
+
           # Pretend pg_config is located in $out/bin to return correct paths, but
           # actually have it in -dev to avoid pulling in all other outputs. See the
           # pg_config.sh script's comments for details.
