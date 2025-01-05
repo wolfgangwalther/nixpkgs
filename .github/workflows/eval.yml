@@ -61,7 +61,7 @@ jobs:
   eval-aliases:
     name: Eval nixpkgs with aliases enabled
     runs-on: ubuntu-24.04
-    needs: [ attrs, get-merge-commit ]
+    needs: [ get-merge-commit ]
     steps:
       - name: Check out the PR at the test merge commit
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -219,7 +219,7 @@ jobs:
   tag:
     name: Tag
     runs-on: ubuntu-24.04
-    needs: [ attrs, process ]
+    needs: [ process ]
     if: needs.process.outputs.baseRunId
     permissions:
       pull-requests: write
@@ -242,12 +242,12 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
 
-      # Important: This workflow job runs with extra permissions,
-      # so we need to make sure to not run untrusted code from PRs
+      # Important: Because we use pull_request_target, this checks out the base branch of the PR, not the PR head.
+      # This is intentional, because this job runs with extra permissions,
+      # so we need to make sure to not run untrusted code from PRs.
       - name: Check out Nixpkgs at the base commit
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ needs.attrs.outputs.baseSha }}
           path: base
           sparse-checkout: ci
 
