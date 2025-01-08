@@ -1,0 +1,16 @@
+name: "Base Branch Changed"
+
+on:
+  pull_request_target:
+    # Some workflows depend on the base branch of the PR, but changing the base branch is not included in the default trigger events, which would be `opened`, `synchronize` or `reopened`.
+    # Instead it causes an `edited` event.
+    # Since `edited` is also triggered when PR title/body is changed, we use this wrapper workflow, to run the other workflows conditionally only.
+    # There is a feature request for adding a `base_changed` event: https://github.com/orgs/community/discussions/35058
+    types: [edited]
+
+permissions: {}
+
+jobs:
+  nixpkgs-vet:
+    if: github.event.changes.base.ref.from && github.event.changes.base.ref.from != github.event.pull_request.base.ref
+    uses: ./.github/workflows/nixpkgs-vet.yml
