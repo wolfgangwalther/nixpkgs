@@ -19,7 +19,8 @@ jobs:
     name: Base
     if: github.event.changes.base.ref.from && github.event.changes.base.ref.from != github.event.pull_request.base.ref
     uses: ./.github/workflows/edited-base.yml
-    # Currently needed downstream for labels.yml
+    # Currently needed downstream for eval.yml and labels.yml
     permissions:
       contents: read
       pull-requests: write
+      statuses: write
