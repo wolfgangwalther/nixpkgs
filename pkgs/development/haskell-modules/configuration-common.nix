@@ -2784,6 +2784,20 @@ self: super: {
   # https://github.com/brandonchinn178/tasty-autocollect/issues/54
   tasty-autocollect = dontCheck super.tasty-autocollect;
 
+  # Megaparsec 9.7. merged, but unreleased
+  configurator-pg = doJailbreak super.configurator-pg;
+
+  # Remove one upper bounds for tasty-quickcheck are bumped.
+  # All merged and released already.
+  binary-parser = doJailbreak super.binary-parser;
+  bytestring-strict-builder = doJailbreak super.bytestring-strict-builder;
+  bytestring-tree-builder = doJailbreak super.bytestring-tree-builder;
+  isomorphism-class = doJailbreak super.isomorphism-class;
+  ptr = doJailbreak super.ptr;
+  strict-list = doJailbreak super.strict-list;
+  text-builder = doJailbreak super.text-builder;
+  text-builder-dev = doJailbreak super.text-builder-dev;
+
   postgrest = lib.pipe
     (super.postgrest.overrideScope (self: super: {
       # 2025-01-19: Upstream is stuck at hasql < 1.7
