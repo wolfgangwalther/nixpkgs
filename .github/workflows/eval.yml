@@ -318,10 +318,16 @@ jobs:
         if: ${{ github.event_name == 'pull_request_target' }}
         uses: LouisBrunner/checks-action@6b626ffbad7cc56fd58627f774b9067e6118af23 # v2.0.0
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ github.token }}
+          # ${{ steps.app-token.outputs.token }}
           sha: ${{ github.event.pull_request.head.sha }}
           name: Eval Summary
           conclusion: neutral
+          output: |
+            {
+              "title": "${{ steps.summary.outputs.title }}",
+              "summary": ""
+            }
           details_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}?pr=${{ github.event.number }}"
 
       - name: Requesting maintainer reviews
