@@ -1,7 +1,7 @@
 {
   lib,
   stdenv,
-  substituteAll,
+  replaceVars,
   fetchFromGitHub,
   taskwarrior2,
   gettext,
@@ -37,8 +37,7 @@ stdenv.mkDerivation rec {
   ];
 
   patches = [
-    (substituteAll {
-      src = ./fix-paths.patch;
+    (replaceVars ./fix-paths.patch {
       task = "${taskwarrior2}/bin/task";
       shell = runtimeShell;
     })

@@ -2,7 +2,7 @@
   lib,
   stdenv,
   fetchurl,
-  substituteAll,
+  replaceVars,
   autoreconfHook,
   pkg-config,
   libusb1,
@@ -20,9 +20,10 @@ stdenv.mkDerivation rec {
   };
 
   patches = [
-    (substituteAll {
-      src = ./fix-paths.patch;
+    (replaceVars ./fix-paths.patch {
       inherit hwdata;
+      # patch context
+      usbids = null;
     })
   ];
 

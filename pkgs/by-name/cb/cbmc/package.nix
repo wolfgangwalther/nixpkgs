@@ -8,7 +8,7 @@
   flex,
   makeWrapper,
   perl,
-  substituteAll,
+  replaceVars,
   cudd,
   nix-update-script,
   fetchpatch,
@@ -47,8 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   patches = [
-    (substituteAll {
-      src = ./0001-Do-not-download-sources-in-cmake.patch;
+    (replaceVars ./0001-Do-not-download-sources-in-cmake.patch {
       inherit cudd;
     })
     ./0002-Do-not-download-sources-in-cmake.patch
