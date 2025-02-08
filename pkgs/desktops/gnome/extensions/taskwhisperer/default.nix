@@ -39,7 +39,6 @@ stdenv.mkDerivation rec {
   patches = [
     (replaceVars ./fix-paths.patch {
       task = "${taskwarrior2}/bin/task";
-      shell = runtimeShell;
     })
   ];
 

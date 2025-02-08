@@ -123,7 +123,7 @@ stdenv.mkDerivation rec {
 
   patches = [
     (replaceVars ./fix-paths.patch {
-      inherit iputils openconnect ethtool gnused systemd;
+      inherit iputils openconnect ethtool gnused;
       inherit runtimeShell;
       # patch context
       OUTPUT = null;

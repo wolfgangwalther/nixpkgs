@@ -56,7 +56,7 @@ stdenv.mkDerivation rec {
     ++ lib.optionals (withEspeak && espeak.mbrolaSupport) [
       # Replace FHS paths.
       (replaceVars ./fix-mbrola-paths.patch {
-        inherit espeak mbrola;
+        inherit mbrola;
       })
     ];
 

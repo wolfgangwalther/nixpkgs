@@ -86,7 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
       gcm = gnome-color-manager;
       inherit
         cups
-        glibc
         libgnomekbd
         shadow
         ;

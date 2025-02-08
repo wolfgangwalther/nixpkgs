@@ -187,7 +187,6 @@ lib.throwIf (enableTWBT' && !enableDFHack) "dwarf-fortress: TWBT requires DFHack
 
     dfInit = replaceVars ./dwarf-fortress-init.in {
       inherit env;
-      inherit (dwarf-fortress) exe;
       stdenv_shell = "${stdenv.shell}";
       cp = "${coreutils}/bin/cp";
       rm = "${coreutils}/bin/rm";
