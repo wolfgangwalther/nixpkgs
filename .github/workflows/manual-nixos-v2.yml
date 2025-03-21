@@ -41,3 +41,10 @@ jobs:
           export NIX_PATH=nixpkgs=$(pwd)
           nix-build --option restrict-eval true nixos/release.nix -A manual.x86_64-linux -o result-x86_64-linux
           nix-build --option restrict-eval true nixos/release.nix -A manual.aarch64-linux -o result-aarch64-linux
+
+      - name: Upload NixOS manual
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: nixos-manual-result
+          path: result-**
+          if-no-files-found: error
