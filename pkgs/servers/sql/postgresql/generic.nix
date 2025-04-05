@@ -409,6 +409,7 @@ let
 
       postInstall =
         ''
+          # test
           moveToOutput "bin/ecpg" "$dev"
           moveToOutput "lib/pgxs" "$dev"
         ''
