@@ -2,6 +2,7 @@
   # utils
   stdenv,
   fetchFromGitHub,
+  fetchpatch,
   lib,
 
   # runtime dependencies
@@ -111,6 +112,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = lib.optionals stdenv.hostPlatform.isLinux [
     ./patches/socketdir-in-run-13+.patch
+    (fetchpatch {
+      url = "https://www.postgresql.org/message-id/attachment/175784/v5-0001-WIP-split-Device-Authorization-flow-into-dlopen-d.patch";
+      hash = "sha256-VUomGUfMYy4tIo5v9BemUFbrxL2TMHPMVtQLsbyxiS4=";
+    })
   ];
 
   installPhase = ''
