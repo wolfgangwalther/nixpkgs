@@ -26,6 +26,10 @@
   # NLS
   nlsSupport ? false,
   gettext,
+
+  # cURL
+  curlSupport ? true,
+  curl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "postgres";
     repo = "postgres";
     # rev, not tag, on purpose: see generic.nix.
-    rev = "refs/tags/REL_17_4";
-    hash = "sha256-TEpvX28chR3CXiOQsNY12t8WfM9ywoZVX1e/6mj9DqE=";
+    rev = "3c6e8c123896584f1be1fe69aaf68dcb5eb094d5";
+    hash = "sha256-VvDfHGcaOCUFvV8kv6GF+IM9PW6XOJl7Q/O6daW+mlw=";
   };
 
   __structuredAttrs = true;
@@ -61,7 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
       openssl
     ]
     ++ lib.optionals gssSupport [ libkrb5 ]
-    ++ lib.optionals nlsSupport [ gettext ];
+    ++ lib.optionals nlsSupport [ gettext ]
+    ++ lib.optionals curlSupport [ curl ];
 
   nativeBuildInputs = [
     bison
@@ -101,7 +106,8 @@ stdenv.mkDerivation (finalAttrs: {
       "--without-readline"
     ]
     ++ lib.optionals gssSupport [ "--with-gssapi" ]
-    ++ lib.optionals nlsSupport [ "--enable-nls" ];
+    ++ lib.optionals nlsSupport [ "--enable-nls" ]
+    ++ lib.optionals curlSupport [ "--with-libcurl" ];
 
   patches = lib.optionals stdenv.hostPlatform.isLinux [
     ./patches/socketdir-in-run-13+.patch
