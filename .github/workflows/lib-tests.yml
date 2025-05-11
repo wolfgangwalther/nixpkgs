@@ -28,4 +28,5 @@ jobs:
 
       - name: Building Nixpkgs lib-tests
         run: |
+          # TEST
           nix-build ci -A lib-tests
