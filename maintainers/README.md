@@ -1,5 +1,5 @@
 # Nixpkgs Maintainers
-
+TEST
 Unlike other packaging ecosystems, the maintainer doesn't have exclusive
 control over the packages and modules they maintain. This more fluid approach
 is one reason why we scale to so many packages.

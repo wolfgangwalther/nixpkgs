@@ -1,5 +1,5 @@
 # Contributing to Nixpkgs packages
-
+TEST
 This document is for people wanting to contribute specifically to the package collection in Nixpkgs.
 See the [CONTRIBUTING.md](../CONTRIBUTING.md) document for more general information.
 
