@@ -82,7 +82,6 @@ jobs:
 
       - name: Validate codeowners
         if: steps.app-token.outputs.token
-        run: result/bin/codeowners-validator
         env:
           OWNERS_FILE: pr/${{ env.OWNERS_FILE }}
           GITHUB_ACCESS_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -90,6 +89,7 @@ jobs:
           OWNER_CHECKER_REPOSITORY: ${{ github.repository }}
           # Set this to "notowned,avoid-shadowing" to check that all files are owned by somebody
           EXPERIMENTAL_CHECKS: "avoid-shadowing"
+        run: result/bin/codeowners-validator
 
   # Request reviews from code owners
   request:
@@ -118,6 +118,6 @@ jobs:
 
       - name: Request reviews
         if: steps.app-token.outputs.token
-        run: result/bin/request-code-owner-reviews.sh ${{ github.repository }} ${{ github.event.number }} "$OWNERS_FILE"
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: result/bin/request-code-owner-reviews.sh ${{ github.repository }} ${{ github.event.number }} "$OWNERS_FILE"
