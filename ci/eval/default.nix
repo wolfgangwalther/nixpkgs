@@ -192,9 +192,9 @@ let
 
   combine =
     {
-      resultsDir,
+      evalDir,
     }:
-    runCommand "combined-result"
+    runCommand "combined-eval"
       {
         nativeBuildInputs = [
           jq
@@ -204,7 +204,7 @@ let
         mkdir -p $out
 
         # Transform output paths to JSON
-        cat ${resultsDir}/*/paths |
+        cat ${evalDir}/*/paths |
           jq --sort-keys --raw-input --slurp '
             split("\n") |
             map(select(. != "") | split(" ") | map(select(. != ""))) |
@@ -222,7 +222,7 @@ let
 
         mkdir -p $out/stats
 
-        for d in ${resultsDir}/*; do
+        for d in ${evalDir}/*; do
           cp -r "$d"/stats-by-chunk $out/stats/$(basename "$d")
         done
       '';
@@ -247,7 +247,7 @@ let
       quickTest ? false,
     }:
     let
-      results = linkFarm "results" (
+      evals = linkFarm "evals" (
         map (evalSystem: {
           name = evalSystem;
           path = singleSystem {
@@ -257,7 +257,7 @@ let
       );
     in
     combine {
-      resultsDir = results;
+      evalDir = evals;
     };
 
 in
