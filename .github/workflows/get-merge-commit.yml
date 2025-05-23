@@ -85,15 +85,19 @@ jobs:
                 echo "mergedSha=$mergedSha" >> "$GITHUB_OUTPUT"
                 targetSha="$(gh api "/repos/${{ github.repository }}/commits/$mergedSha" --jq '.parents[0].sha')"
                 echo "targetSha=$targetSha" >> "$GITHUB_OUTPUT"
-
-                echo "Checking the commits:"
-                echo "merged: $mergedSha"
-                echo "target: $targetSha"
               else
                 echo "The PR has a merge conflict"
-                echo "Skipping the rest..."
-                exit 1
+
+                mergedSha="$(jq -r .head.sha <<< "$prInfo")"
+                echo "mergedSha=$mergedSha" >> "$GITHUB_OUTPUT"
+                baseSha="$(jq -r .base.sha <<< "$prInfo")"
+                targetSha="$(gh api "/repos/${{ github.repository }}/compare/$baseSha...$mergedSha" --jq '.merge_base_commit.sha')"
+                echo "targetSha=$targetSha" >> "$GITHUB_OUTPUT"
               fi
+
+              echo "Checking the commits:"
+              echo "merged: $mergedSha"
+              echo "target: $targetSha"
               ;;
           esac
 
