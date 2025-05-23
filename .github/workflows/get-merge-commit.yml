@@ -7,7 +7,7 @@ on:
   workflow_call:
     outputs:
       mergedSha:
-        description: "The merge commit SHA"
+        description: "The merge commit SHA TEST"
         value: ${{ jobs.resolve-merge-commit.outputs.mergedSha }}
       targetSha:
         description: "The target commit SHA"
