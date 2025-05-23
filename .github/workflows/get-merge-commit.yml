@@ -42,12 +42,57 @@ jobs:
               echo "mergedSha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
               ;;
             pull_request*)
-              if commits=$(base/ci/get-merge-commit.sh ${{ github.repository }} ${{ github.event.number }}); then
-                echo -e "Checking the commits:\n$commits"
-                echo "$commits" >> "$GITHUB_OUTPUT"
+              # Retry the API query this many times
+              retryCount=5
+              # Start with 5 seconds, but double every retry
+              retryInterval=5
+
+              while true; do
+                echo "Checking whether the pull request can be merged"
+                prInfo=$(gh api "/repos/${{ github.repository }}/pulls/${{ github.event.number }}")
+
+                # Non-open PRs won't have their mergeability computed no matter what
+                state=$(jq -r .state <<< "$prInfo")
+                if [[ "$state" != open ]]; then
+                  echo "PR is not open anymore"
+                  exit 1
+                fi
+
+                mergeable=$(jq -r .mergeable <<< "$prInfo")
+                if [[ "$mergeable" == "null" ]]; then
+                  if (( retryCount == 0 )); then
+                    echo "Not retrying anymore. It's likely that GitHub is having internal issues: check https://www.githubstatus.com/"
+                    exit 1
+                  else
+                    (( retryCount -= 1 )) || true
+
+                    # null indicates that GitHub is still computing whether it's mergeable
+                    # Wait a couple seconds before trying again
+                    echo "GitHub is still computing whether this PR can be merged, waiting $retryInterval seconds before trying again ($retryCount retries left)"
+                    sleep "$retryInterval"
+
+                    (( retryInterval *= 2 )) || true
+                  fi
+                else
+                  break
+                fi
+              done
+
+              if [[ "$mergeable" == "true" ]]; then
+                echo "The PR can be merged"
+
+                mergedSha="$(jq -r .merge_commit_sha <<< "$prInfo")"
+                echo "mergedSha=$mergedSha" >> "$GITHUB_OUTPUT"
+                targetSha="$(gh api "/repos/${{ github.repository }}/commits/$mergedSha" --jq '.parents[0].sha')"
+                echo "targetSha=$targetSha" >> "$GITHUB_OUTPUT"
+
+                echo "Checking the commits:"
+                echo "merged: $mergedSha"
+                echo "target: $targetSha"
               else
-                # Skipping so that no notifications are sent
+                echo "The PR has a merge conflict"
                 echo "Skipping the rest..."
+                exit 1
               fi
               ;;
           esac
