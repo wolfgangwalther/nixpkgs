@@ -1,6 +1,11 @@
 name: Reviews
 
 on:
+  pull_request:
+    paths:
+      - .github/workflows/reviews.yml
+  pull_request_target:
+    types: [ready_for_review]
   workflow_call:
 
 permissions: {}
@@ -40,12 +45,20 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
+            console.log(context)
+            const run_id = (await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'eval.yml',
+              event: context.eventName,
+              head_sha: context.payload.pull_request.head.sha
+            })).data.id
             // Waiting 12 * 5 sec = 1 min. max.
             for (let i = 0; i < 12; i++) {
               const result = await github.rest.actions.listWorkflowRunArtifacts({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                run_id: context.runId,
+                run_id,
                 name: 'comparison'
               })
               if (result.data.total_count > 0) return
