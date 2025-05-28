@@ -16,6 +16,7 @@ problem=0
 
 # Not everyone calls their remote "origin"
 remote="$(git remote -v | grep 'NixOS/nixpkgs.git (fetch)' | head -n1 | cut -f1 || true)"
+git remote -v
 
 commits="$(git rev-list --reverse "$1..$2")"
 
