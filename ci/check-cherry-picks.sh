@@ -61,6 +61,7 @@ while read -r new_commit_sha ; do
         echo "  ✔ $original_commit_sha present in branch $picked_branch"
 
         range_diff_common='git range-diff
+          --quiet
           --no-notes
           --creation-factor=100
           '"$original_commit_sha~..$original_commit_sha"'
