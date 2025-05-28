@@ -141,4 +141,6 @@ while read -r new_commit_sha ; do
   problem=1
 done <<< "$commits"
 
-exit $problem
+if [ ! -v GITHUB_ACTIONS ]; then
+  exit $problem
+fi
