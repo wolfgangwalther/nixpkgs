@@ -28,4 +28,9 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          ./trusted/ci/check-cherry-picks.sh "$BASE_SHA" "$HEAD_SHA"
+          ./trusted/ci/check-cherry-picks.sh "$BASE_SHA" "$HEAD_SHA" checked-cherry-picks.md
+
+      - if: ${{ !cancelled() }}
+        run: |
+          cat checked-cherry-picks.md >> "$GITHUB_STEP_SUMMARY"
+
