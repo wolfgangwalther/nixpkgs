@@ -1,3 +1,9 @@
+# ATTENTION:
+# This workflow is designed as an entrypoint for GitHub Action's
+# "Require status checks to pass" feature.
+# Renaming the workflow or any of its jobs will require corresponding
+# changes to the branch protection rules.
+
 name: Eval
 
 on:
@@ -20,7 +26,6 @@ permissions: {}
 
 jobs:
   prepare:
-    name: Prepare
     runs-on: ubuntu-24.04-arm
     outputs:
       mergedSha: ${{ steps.get-merge-commit.outputs.mergedSha }}
@@ -42,13 +47,13 @@ jobs:
           echo "systems=$(jq -c <ci/supportedSystems.json)" >> "$GITHUB_OUTPUT"
 
   outpaths:
-    name: Outpaths
     runs-on: ubuntu-24.04-arm
     needs: [ prepare ]
     strategy:
       fail-fast: false
       matrix:
         system: ${{ fromJSON(needs.prepare.outputs.systems) }}
+    name: ${{ matrix.system }}
     steps:
       - name: Enable swap
         run: |
@@ -105,9 +110,9 @@ jobs:
           runId=$(jq .id <<< "$run")
 
           if ! job=$(gh api --method GET /repos/"$REPOSITORY"/actions/runs/"$runId"/jobs \
-            --jq ".jobs[] | select (.name == \"Outpaths ($MATRIX_SYSTEM)\")") \
+            --jq ".jobs[] | select (.name == \"$MATRIX_SYSTEM\")") \
             || [[ -z "$job" ]]; then
-            echo "Could not find the Outpaths ($MATRIX_SYSTEM) job for workflow run $runId, cannot make comparison"
+            echo "Could not find the $MATRIX_SYSTEM job for workflow run $runId, cannot make comparison"
             exit 1
           fi
           jobId=$(jq .id <<< "$job")
@@ -154,7 +159,6 @@ jobs:
           path: diff/*
 
   tag:
-    name: Tag
     runs-on: ubuntu-24.04-arm
     needs: [ prepare, outpaths ]
     if: needs.prepare.outputs.targetSha
