@@ -7,10 +7,6 @@ on:
   pull_request_target:
     branches:
       - master
-    paths:
-      - 'doc/**'
-      - 'lib/**'
-      - 'pkgs/by-name/ni/nixdoc/**'
 
 permissions: {}
 
