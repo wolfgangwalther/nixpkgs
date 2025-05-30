@@ -3,8 +3,6 @@
 # access to the GitHub API. This means that it should not evaluate user input in
 # a way that allows code injection.
 
-name: "Label PR"
-
 on:
   pull_request_target:
 
@@ -13,7 +11,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  labels:
+  by-changed-file:
     name: label-pr
     runs-on: ubuntu-24.04-arm
     if: "github.repository_owner == 'NixOS' && !contains(github.event.pull_request.title, '[skip treewide]')"
