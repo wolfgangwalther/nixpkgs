@@ -1,19 +1,24 @@
-name: "No channel PR"
+# ATTENTION:
+# This workflow is designed as an entrypoint for GitHub Action's
+# "Require status checks to pass" feature.
+# Renaming the workflow or any of its jobs will require corresponding
+# changes to the branch protection rules.
+
+name: Check
 
 on:
   pull_request:
     paths:
-      - .github/workflows/no-channel.yml
+      - .github/workflows/check.yml
   pull_request_target:
 
 permissions: {}
 
 jobs:
-  fail:
+  no-channel-branches:
     if: |
-      startsWith(github.event.pull_request.base.ref, 'nixos-') ||
-      startsWith(github.event.pull_request.base.ref, 'nixpkgs-')
-    name: "This PR is targeting a channel branch"
+      startsWith(github.base_ref, 'nixos-') ||
+      startsWith(github.base_ref, 'nixpkgs-')
     runs-on: ubuntu-24.04-arm
     steps:
       - run: |
