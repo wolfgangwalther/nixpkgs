@@ -40,11 +40,11 @@ jobs:
           script: |
             const { readFile, writeFile } = require('node:fs/promises')
 
-            const job_url = (await github.rest.actions.listJobsForWorkflowRun({
+            const job_url = (await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: context.runId
-            })).data.jobs[0].html_url + '?pr=' + context.payload.pull_request.number
+            }))[0].html_url + '?pr=' + context.payload.pull_request.number
 
             const header = await readFile('trusted/ci/check-cherry-picks.md')
             const body = await readFile('checked-cherry-picks.md')
