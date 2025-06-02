@@ -117,20 +117,29 @@ jobs:
               })).filter(review =>
                 review.user.login == 'github-actions[bot]' &&
                 review.state == 'CHANGES_REQUESTED'
-              ).map(async (review) => {
-                await github.rest.pulls.dismissReview({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: context.payload.pull_request.number,
-                  review_id: review.id,
-                  message: 'All cherry-picks are good now, thank you!'
-                })
-                await github.graphql(`mutation($node_id:ID!) {
+              ).map(review => github.rest.pulls.dismissReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                review_id: review.id,
+                message: 'All cherry-picks are good now, thank you!'
+              }))
+            )
+            await Promise.all(
+              (await github.paginate(github.rest.pulls.listReviews, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number
+              })).filter(review =>
+                review.user.login == 'github-actions[bot]'
+              ).map(review => github.graphql(`
+                mutation($node_id:ID!) {
                   minimizeComment(input: {
                     classifier: RESOLVED,
                     subjectId: $node_id
                   })
                   { clientMutationId }
-                }`, { node_id: review.node_id })
-              })
+                }`,
+                { node_id: review.node_id }
+              ))
             )
