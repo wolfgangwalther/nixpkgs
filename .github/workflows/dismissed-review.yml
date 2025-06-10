@@ -27,29 +27,35 @@ jobs:
           script: |
             // PRs from forks don't have any PRs associated by default.
             // Thus, we request the PR number with an API call *to* the fork's repo.
+            // Multiple pull requests can be open from the same head commit, either via
+            // different base branches or head branches.
             const { head_repository, head_sha, repository } = context.payload.workflow_run
-            const pull_number = (await github.paginate(github.rest.repos.listPullRequestsAssociatedWithCommit, {
-              owner: head_repository.owner.login,
-              repo: head_repository.name,
-              commit_sha: head_sha
-            })).find(pull_request => pull_request.base.repo.id == repository.id).number
-
             await Promise.all(
-              (await github.paginate(github.rest.pulls.listReviews, {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number
-              })).filter(review =>
-                review.user.login == 'github-actions[bot]' &&
-                review.state == 'DISMISSED'
-              ).map(review => github.graphql(`
-                mutation($node_id:ID!) {
-                  minimizeComment(input: {
-                    classifier: RESOLVED,
-                    subjectId: $node_id
-                  })
-                  { clientMutationId }
-                }`,
-                { node_id: review.node_id }
-              ))
+              (await github.paginate(github.rest.repos.listPullRequestsAssociatedWithCommit, {
+                owner: head_repository.owner.login,
+                repo: head_repository.name,
+                commit_sha: head_sha
+              }))
+              .filter(pull_request => pull_request.base.repo.id == repository.id)
+              .map(async (pull_request) =>
+                Promise.all(
+                  (await github.paginate(github.rest.pulls.listReviews, {
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: pull_request.number
+                  })).filter(review =>
+                    review.user.login == 'github-actions[bot]' &&
+                    review.state == 'DISMISSED'
+                  ).map(review => github.graphql(`
+                    mutation($node_id:ID!) {
+                      minimizeComment(input: {
+                        classifier: RESOLVED,
+                        subjectId: $node_id
+                      })
+                      { clientMutationId }
+                    }`,
+                    { node_id: review.node_id }
+                  ))
+                )
+              )
             )
