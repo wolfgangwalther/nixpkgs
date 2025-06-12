@@ -11,7 +11,7 @@
 set -euo pipefail
 
 do_commit=false
-mark_broken_list_flags=""
+mark_broken_list_flags=()
 
 for arg in "$@"; do
     case "$arg" in
@@ -19,7 +19,7 @@ for arg in "$@"; do
             do_commit=true
             ;;
         --no-request-logs)
-            mark_broken_list_flags="$mark_broken_list_flags $arg"
+            mark_broken_list_flags+=("$arg")
             ;;
         *)
             echo "$0: unknown flag: $arg"
@@ -35,7 +35,7 @@ trap "rm ${tmpfile}" 0
 
 echo "Remember that you need to manually run 'maintainers/scripts/haskell/hydra-report.hs get-report' sometime before running this script."
 echo "Generating a list of broken builds and displaying for manual confirmation ..."
-maintainers/scripts/haskell/hydra-report.hs mark-broken-list $mark_broken_list_flags | sort -i > "$tmpfile"
+maintainers/scripts/haskell/hydra-report.hs mark-broken-list "${mark_broken_list_flags[@]}" | sort -i > "$tmpfile"
 
 $EDITOR "$tmpfile"
 
