@@ -69,8 +69,8 @@ tmp=$(mktemp -d $tmptpl)
 pushd $tmp >/dev/null
 echo "tempdir is $tmp"
 
-wgetargs='--quiet --show-progress'
-#wgetargs='' # debug
+wgetargs=('--quiet' '--show-progress')
+#wgetargs=() # debug
 
 dirlist="$BASE_URL"
 filelist=""
@@ -89,7 +89,7 @@ do
         relpath=$(echo "./${dirurl:$base_url_len}" | clean_urls)
         mkdir -p "$relpath"
         indexfile=$(echo "$relpath/index.html" | clean_urls)
-        wget $wgetargs -O "$indexfile" "$dirurl"
+        wget "${wgetargs[@]}" -O "$indexfile" "$dirurl"
         echo "parsing $indexfile"
         filedirlist="$(PARSE_INDEX "$indexfile")"
         filelist_next="$(echo "$filedirlist" | grep '\.tar\.xz$' | while read file; do echo "$dirurl/$file"; done)"
@@ -115,7 +115,7 @@ echo "parsed $filecount tar.xz files:"; echo "$filelist"
 echo "fetching $filecount sha256 files ..."
 urllist="$(echo "$filelist" | while read file; do echo "$file.sha256"; done)"
 # wget -r: keep directory structure
-echo "$urllist" | xargs wget $wgetargs -nH -r -c --no-parent && {
+echo "$urllist" | xargs wget "${wgetargs[@]}" -nH -r -c --no-parent && {
     actual=$(find . -type f -name '*.sha256' | wc -l)
     echo "fetching $filecount sha256 files done: got $actual files"
 } || {
@@ -127,7 +127,7 @@ echo "$urllist" | xargs wget $wgetargs -nH -r -c --no-parent && {
 
     # TODO fetch only missing tar.xz files
     echo "fetching $filecount tar.xz files ..."
-    echo "$filelist" | xargs wget $wgetargs -nH -r -c --no-parent
+    echo "$filelist" | xargs wget "${wgetargs[@]}" -nH -r -c --no-parent
 
     echo "generating sha256 files ..."
     find . -type f -name '*.tar.xz' | while read src; do
