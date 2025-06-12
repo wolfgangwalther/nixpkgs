@@ -73,12 +73,12 @@ for file in "${files[@]}"; do
     outFile="${outFile%".chapter.xml"}"
     outFile="${outFile%".xml"}$extension"
     temp1=$(mktemp)
-    $DIR/doc/escape-code-markup.py "$file" "$temp1"
+    "$DIR"/doc/escape-code-markup.py "$file" "$temp1"
     if [[ $debug ]]; then
         echo "Converted $file to $temp1" > /dev/stderr
     fi
     temp2=$(mktemp)
-    $DIR/doc/replace-xrefs-by-empty-links.py "$temp1" "$temp2"
+    "$DIR"/doc/replace-xrefs-by-empty-links.py "$temp1" "$temp2"
     if [[ $debug ]]; then
         echo "Converted $temp1 to $temp2" > /dev/stderr
     fi

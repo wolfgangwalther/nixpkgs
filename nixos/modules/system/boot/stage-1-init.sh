@@ -100,7 +100,7 @@ waitDevice() {
     # alas...  So just wait for a few seconds for the device to
     # appear.
     for dev in $device; do
-        if test ! -e $dev; then
+        if test ! -e "$dev"; then
             echo -n "waiting for device $dev to appear..."
             try=20
             while [ $try -gt 0 ]; do
@@ -109,7 +109,7 @@ waitDevice() {
                 lvm vgchange -ay
                 # and tell udev to create nodes for the new LVs
                 udevadm trigger --action=add
-                if test -e $dev; then break; fi
+                if test -e "$dev"; then break; fi
                 echo -n "."
                 try=$((try - 1))
             done
@@ -188,21 +188,21 @@ export stage2Init=/init
 for o in $(cat /proc/cmdline); do
     case $o in
         console=*)
-            set -- $(IFS==; echo $o)
+            set -- $(IFS==; echo "$o")
             params=$2
-            set -- $(IFS=,; echo $params)
+            set -- $(IFS=,; echo "$params")
             console=$1
             ;;
         init=*)
-            set -- $(IFS==; echo $o)
+            set -- $(IFS==; echo "$o")
             stage2Init=$2
             ;;
         boot.persistence=*)
-            set -- $(IFS==; echo $o)
+            set -- $(IFS==; echo "$o")
             persistence=$2
             ;;
         boot.persistence.opt=*)
-            set -- $(IFS==; echo $o)
+            set -- $(IFS==; echo "$o")
             persistence_opt=$2
             ;;
         boot.trace|debugtrace)
@@ -231,10 +231,10 @@ for o in $(cat /proc/cmdline); do
             # If a root device is specified on the kernel command
             # line, make it available through the symlink /dev/root.
             # Recognise LABEL= and UUID= to support UNetbootin.
-            set -- $(IFS==; echo $o)
-            if [ $2 = "LABEL" ]; then
+            set -- $(IFS==; echo "$o")
+            if [ "$2" = "LABEL" ]; then
                 root="/dev/disk/by-label/$3"
-            elif [ $2 = "UUID" ]; then
+            elif [ "$2" = "UUID" ]; then
                 root="/dev/disk/by-uuid/$3"
             else
                 root=$2
@@ -247,7 +247,7 @@ for o in $(cat /proc/cmdline); do
         findiso=*)
             # if an iso name is supplied, try to find the device where
             # the iso resides on
-            set -- $(IFS==; echo $o)
+            set -- $(IFS==; echo "$o")
             isoPath=$2
             ;;
     esac
@@ -390,7 +390,7 @@ mountFS() {
     fi
 
     # Filter out x- options, which busybox doesn't do yet.
-    local optionsFiltered="$(IFS=,; for i in $options; do if [ "${i:0:2}" != "x-" ]; then echo -n $i,; fi; done)"
+    local optionsFiltered="$(IFS=,; for i in $options; do if [ "${i:0:2}" != "x-" ]; then echo -n "$i",; fi; done)"
     # Prefix (lower|upper|work)dir with /mnt-root (overlayfs)
     local optionsPrefixed="$( echo "${optionsFiltered%,}" | sed -E 's#\<(lowerdir|upperdir|workdir)=#\1=/mnt-root#g' )"
 
@@ -589,7 +589,7 @@ while read -u 3 mountPoint; do
 
       umount /tmp-iso
       rmdir /tmp-iso
-      if [ -n "$isoPath" ] && [ $fsType = "iso9660" ] && mountpoint -q /findiso; then
+      if [ -n "$isoPath" ] && [ "$fsType" = "iso9660" ] && mountpoint -q /findiso; then
        umount /findiso
       fi
       continue
@@ -620,7 +620,7 @@ else
 fi
 if [ "$ROOT_MAJOR" -a "$ROOT_MINOR" -a "$ROOT_MAJOR" != 0 ]; then
     mkdir -p /run/udev/rules.d
-    echo 'ACTION=="add|change", SUBSYSTEM=="block", ENV{MAJOR}=="'$ROOT_MAJOR'", ENV{MINOR}=="'$ROOT_MINOR'", SYMLINK+="root"' > /run/udev/rules.d/61-dev-root-link.rules
+    echo 'ACTION=="add|change", SUBSYSTEM=="block", ENV{MAJOR}=="'"$ROOT_MAJOR"'", ENV{MINOR}=="'"$ROOT_MINOR"'", SYMLINK+="root"' > /run/udev/rules.d/61-dev-root-link.rules
 fi
 
 
@@ -629,7 +629,7 @@ udevadm control --exit
 
 # Reset the logging file descriptors.
 # Do this just before pkill, which will kill the tee process.
-exec 1>&$logOutFd 2>&$logErrFd
+exec 1>&$logOutFd 2>&"$logErrFd"
 eval "exec $logOutFd>&- $logErrFd>&-"
 
 # Kill any remaining processes, just to be sure we're not taking any
@@ -642,7 +642,7 @@ for pid in $(pgrep -v -f '^@'); do
     # http://stackoverflow.com/questions/12213445/identifying-kernel-threads
     readlink "/proc/$pid/exe" &> /dev/null || continue
     # Try to avoid killing ourselves.
-    [ $pid -eq $$ ] && continue
+    [ "$pid" -eq $$ ] && continue
     kill -9 "$pid"
 done
 

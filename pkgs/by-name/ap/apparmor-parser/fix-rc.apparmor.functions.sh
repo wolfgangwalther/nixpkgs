@@ -12,21 +12,21 @@ aa_action() {
 }
 
 aa_log_success_msg() {
-   [ -n "$1" ] && echo -n $1
+   [ -n "$1" ] && echo -n "$1"
    echo ": done."
 }
 
 aa_log_warning_msg() {
-   [ -n "$1" ] && echo -n $1
+   [ -n "$1" ] && echo -n "$1"
    echo ": Warning."
 }
 
 aa_log_failure_msg() {
-   [ -n "$1" ] && echo -n $1
+   [ -n "$1" ] && echo -n "$1"
    echo ": Failed."
 }
 
 aa_log_skipped_msg() {
-   [ -n "$1" ] && echo -n $1
+   [ -n "$1" ] && echo -n "$1"
    echo ": Skipped."
 }

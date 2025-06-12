@@ -41,7 +41,7 @@ getVar(){
         echo "$line"
         ;;
     esac
-  done < /proc/$pid/environ \
+  done < /proc/"$pid"/environ \
   | cut -d "=" -f 2
 }
 
@@ -67,7 +67,7 @@ bashInteractive="$(getVar bashInteractive)"
 # the debug shell will be started as interactive shell after loading the env vars
 debugShell="$(getVar debugShell)"
 # to drop the user into the working directory at the point of failure
-pwd="$(readlink /proc/$pid/cwd)"
+pwd="$(readlink /proc/"$pid"/cwd)"
 
 # enter the namespace of the failed build
 # bash needs to be executed with --init-file /build/env-vars to include the bash native

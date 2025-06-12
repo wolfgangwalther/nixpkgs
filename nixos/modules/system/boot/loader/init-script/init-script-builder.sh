@@ -39,7 +39,7 @@ addEntry() {
 
     configurationCounter=$((configurationCounter + 1))
 
-    local stage2=$path/init
+    local stage2="$path"/init
 
     content="$(
       echo "#!/bin/sh"
@@ -60,13 +60,13 @@ addEntry() {
 
 mkdir -p /boot /sbin
 
-addEntry "@distroName@ - Default" $defaultConfig ""
+addEntry "@distroName@ - Default" "$defaultConfig" ""
 
 # Add all generations of the system profile to the menu, in reverse
 # (most recent to least recent) order.
-for link in $((ls -d $defaultConfig/specialisation/* ) | sort -n); do
-    date=$(stat --printf="%y\n" $link | sed 's/\..*//')
-    addEntry "@distroName@ - variation" $link ""
+for link in $((ls -d "$defaultConfig"/specialisation/* ) | sort -n); do
+    date=$(stat --printf="%y\n" "$link" | sed 's/\..*//')
+    addEntry "@distroName@ - variation" "$link" ""
 done
 
 for generation in $(
@@ -74,14 +74,14 @@ for generation in $(
     | sed 's/system-\([0-9]\+\)-link/\1/' \
     | sort -n -r); do
     link=/nix/var/nix/profiles/system-$generation-link
-    date=$(stat --printf="%y\n" $link | sed 's/\..*//')
-    if [ -d $link/kernel ]; then
-      kernelVersion=$(cd $(dirname $(readlink -f $link/kernel))/lib/modules && echo *)
+    date=$(stat --printf="%y\n" "$link" | sed 's/\..*//')
+    if [ -d "$link"/kernel ]; then
+      kernelVersion=$(cd $(dirname $(readlink -f "$link"/kernel))/lib/modules && echo *)
       suffix="($date - $kernelVersion)"
     else
       suffix="($date)"
     fi
-    addEntry "@distroName@ - Configuration $generation $suffix" $link "$generation ($date)"
+    addEntry "@distroName@ - Configuration $generation $suffix" "$link" "$generation ($date)"
 done
 
 mv $tmpOther $targetOther

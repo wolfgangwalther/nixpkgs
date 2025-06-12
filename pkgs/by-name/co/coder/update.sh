@@ -31,8 +31,8 @@ update_version_and_hashes() {
         echo "Fetching hash for $channel/$ARCH..."
 
         # Fetch the new hash using nix-prefetch-url
-        local NEW_HASH=$(nix-prefetch-url --type sha256 $URL)
-        local SRI_HASH=$(nix hash to-sri --type sha256 $NEW_HASH)
+        local NEW_HASH=$(nix-prefetch-url --type sha256 "$URL")
+        local SRI_HASH=$(nix hash to-sri --type sha256 "$NEW_HASH")
 
         # Update the Nix file with the new hash, using '#' as delimiter and preserving indentation
         sed -i "/${channel} = {/,/};/{
@@ -42,7 +42,7 @@ update_version_and_hashes() {
 }
 
 # Update stable channel
-update_version_and_hashes $LATEST_STABLE_VERSION "stable"
+update_version_and_hashes "$LATEST_STABLE_VERSION" "stable"
 
 # Update mainline channel
-update_version_and_hashes $LATEST_MAINLINE_VERSION "mainline"
+update_version_and_hashes "$LATEST_MAINLINE_VERSION" "mainline"

@@ -60,7 +60,7 @@ dotnetFromEnv'
         "${gappsWrapperArgs[@]}" \
         "${makeWrapperArgs[@]}"
 
-    echo "installed wrapper to "$2""
+    echo "installed wrapper to ""$2"""
 }
 
 dotnetFixupHook() {

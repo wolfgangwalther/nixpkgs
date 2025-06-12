@@ -14,7 +14,7 @@ function calc_hash () {
     local version=$1
     local arch=$2
     url="https://releases.hashicorp.com/boundary/${version}/boundary_${version}_${arch}.zip"
-    zip_hash=$(nix-prefetch-url --unpack $url)
+    zip_hash=$(nix-prefetch-url --unpack "$url")
     nix hash to-sri --type sha256 "$zip_hash"
 }
 

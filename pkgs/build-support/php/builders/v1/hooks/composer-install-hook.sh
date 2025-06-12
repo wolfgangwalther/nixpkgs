@@ -35,8 +35,8 @@ composerInstallConfigureHook() {
             ${composerNoScripts:+--no-scripts} \
             update
 
-        mkdir -p $out
-        cp composer.lock $out/
+        mkdir -p "$out"
+        cp composer.lock "$out"/
 
         echo
         echo -e "\e[31mERROR: No composer.lock found\e[0m"

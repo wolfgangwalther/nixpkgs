@@ -46,10 +46,10 @@ sed -i "s@hash.* = .*;@hash = \"sha512-$SHA512\";@g" "$WORKING_NIX"
 
 # update the changelog ("just" increment the number)
 # manually check that the changelog corresponds to our Plexamp version
-CHANGELOG_URL=$(rg --only-matching 'changelog = "(.+)";' --replace '$1' $WORKING_NIX)
-CHANGELOG_NUMBER=$(rg --only-matching '.*/([0-9]+)' --replace '$1' <<< $CHANGELOG_URL)
+CHANGELOG_URL=$(rg --only-matching 'changelog = "(.+)";' --replace '$1' "$WORKING_NIX")
+CHANGELOG_NUMBER=$(rg --only-matching '.*/([0-9]+)' --replace '$1' <<< "$CHANGELOG_URL")
 NEXT_CHANGELOG=$(($CHANGELOG_NUMBER + 1))
-NEXT_URL=$(rg --only-matching '(.*)/[0-9]+' --replace "\$1/$NEXT_CHANGELOG" <<< $CHANGELOG_URL)
-sed -i "s@changelog = \".*\";@changelog = \"$NEXT_URL\";@" $WORKING_NIX
+NEXT_URL=$(rg --only-matching '(.*)/[0-9]+' --replace "\$1/$NEXT_CHANGELOG" <<< "$CHANGELOG_URL")
+sed -i "s@changelog = \".*\";@changelog = \"$NEXT_URL\";@" "$WORKING_NIX"
 
-mv $WORKING_NIX $DEFAULT_NIX
+mv "$WORKING_NIX" "$DEFAULT_NIX"

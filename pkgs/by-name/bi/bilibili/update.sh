@@ -10,8 +10,8 @@ version=$(jq -r .tag_name <<< "$payload" | cut -c 2-)
 amd64_url=https://github.com/msojocs/bilibili-linux/releases/download/v${version}/io.github.msojocs.bilibili_${version}_amd64.deb
 arm64_url=https://github.com/msojocs/bilibili-linux/releases/download/v${version}/io.github.msojocs.bilibili_${version}_arm64.deb
 
-amd64_hash=$(nix-prefetch-url $amd64_url)
-arm64_hash=$(nix-prefetch-url $arm64_url)
+amd64_hash=$(nix-prefetch-url "$amd64_url")
+arm64_hash=$(nix-prefetch-url "$arm64_url")
 
 # use friendlier hashes
 amd64_hash=$(nix hash convert --to sri --hash-algo sha256 "$amd64_hash")

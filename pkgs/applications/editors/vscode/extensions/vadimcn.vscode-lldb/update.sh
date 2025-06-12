@@ -35,15 +35,15 @@ fi
 echo "$old_version -> $version"
 
 # update hashes
-sed -E 's/\bversion = ".*?"/version = "'$version'"/' --in-place "$nixFile"
+sed -E 's/\bversion = ".*?"/version = "'"$version"'"/' --in-place "$nixFile"
 srcHash=$(nix-prefetch-github vadimcn codelldb --rev "v$version" | jq --raw-output .hash)
-sed -E 's#\bhash = ".*?"#hash = "'$srcHash'"#' --in-place "$nixFile"
+sed -E 's#\bhash = ".*?"#hash = "'"$srcHash"'"#' --in-place "$nixFile"
 cargoHash=$(nurl --expr "(import $nixpkgs {}).vscode-extensions.vadimcn.vscode-lldb.adapter.cargoDeps.vendorStaging")
-sed -E 's#\bcargoHash = ".*?"#cargoHash = "'$cargoHash'"#' --in-place "$adapterNixFile"
+sed -E 's#\bcargoHash = ".*?"#cargoHash = "'"$cargoHash"'"#' --in-place "$adapterNixFile"
 
-pushd $TMPDIR
-curl -LO https://raw.githubusercontent.com/$owner/$repo/v${version}/package-lock.json
+pushd "$TMPDIR"
+curl -LO https://raw.githubusercontent.com/$owner/$repo/v"${version}"/package-lock.json
 npmDepsHash=$(prefetch-npm-deps ./package-lock.json)
 popd
-sed -E 's#\bnpmDepsHash = ".*?"#npmDepsHash = "'$npmDepsHash'"#' --in-place "$nodeDepsNixFile"
+sed -E 's#\bnpmDepsHash = ".*?"#npmDepsHash = "'"$npmDepsHash"'"#' --in-place "$nodeDepsNixFile"
 

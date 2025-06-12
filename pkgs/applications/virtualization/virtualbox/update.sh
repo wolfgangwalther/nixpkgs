@@ -38,9 +38,9 @@ if [ ! "$oldVersion" = "$latestVersion" ]; then
       -e "s/virtualboxSubVersion = \".*\";/virtualboxSubVersion = \"\";/g" \
       -e "s/virtualboxSha256 = \".*\";/virtualboxSha256 = \"$virtualBoxShaSum\";/g" \
       -i "$virtualboxNixFile"
-  sed -e 's|value = "'$extpackOldShaSum'"|value = "'$extpackShaSum'"|' \
+  sed -e 's|value = "'"$extpackOldShaSum"'"|value = "'"$extpackShaSum"'"|' \
       -e "s/virtualboxExtPackVersion = \".*\";/virtualboxExtPackVersion = \"$latestVersion\";/g" \
-      -i $extpackNixFile
+      -i "$extpackNixFile"
   sed -e "s/sha256 = \".*\";/sha256 = \"$guestAdditionsIsoShaSum\";/g" \
       -i "$guestAdditionsIsoNixFile"
   sed -e "s/virtualboxVersion = \".*\";/virtualboxVersion = \"$latestVersion\";/g" \

@@ -31,7 +31,7 @@ loc() {
         depth=$1
     fi
     # ( lineno fnname file ) of the caller
-    caller=( $(caller $depth) )
+    caller=( $(caller "$depth") )
     echo "${caller[2]}:${caller[0]}"
 }
 

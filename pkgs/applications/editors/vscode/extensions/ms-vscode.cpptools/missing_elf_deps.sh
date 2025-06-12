@@ -41,11 +41,11 @@ function patchelf_clangformat() {
 function print_nix_version_clangtools() {
   nixClangToolsBin="$(get_pkg_out "clang-tools" "/bin")"
   echo "nixClangToolsBin='$nixClangToolsBin'"
-  $nixClangToolsBin/clang-format --version
+  "$nixClangToolsBin"/clang-format --version
 }
 
 function print_nix_version_mono() {
   nixMonoBin="$(get_pkg_out "mono" "/bin")"
   echo "nixMonoBin='$nixMonoBin'"
-  $nixMonoBin/mono --version
+  "$nixMonoBin"/mono --version
 }

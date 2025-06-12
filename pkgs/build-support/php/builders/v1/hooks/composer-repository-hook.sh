@@ -16,7 +16,7 @@ composerRepositoryConfigureHook() {
     echo "Executing composerRepositoryConfigureHook"
 
     if [[ -e "$composerLock" ]]; then
-        cp $composerLock composer.lock
+        cp "$composerLock" composer.lock
     fi
 
     if [[ ! -f "composer.lock" ]]; then
@@ -31,8 +31,8 @@ composerRepositoryConfigureHook() {
             ${composerNoScripts:+--no-scripts} \
             update
 
-        mkdir -p $out
-        cp composer.lock $out/
+        mkdir -p "$out"
+        cp composer.lock "$out"/
 
         echo
         echo -e "\e[31mERROR: No composer.lock found\e[0m"
@@ -79,13 +79,13 @@ composerRepositoryCheckHook() {
 composerRepositoryInstallHook() {
     echo "Executing composerRepositoryInstallHook"
 
-    mkdir -p $out
+    mkdir -p "$out"
 
-    cp -ar repository/. $out/
+    cp -ar repository/. "$out"/
 
     # Copy the composer.lock files to the output directory, to be able to validate consistency with
     # the src composer.lock file where this fixed-output derivation is used
-    cp composer.lock $out/
+    cp composer.lock "$out"/
 
     echo "Finished composerRepositoryInstallHook"
 }

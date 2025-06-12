@@ -20,7 +20,7 @@ set -eu
 
 echo "testBuildFailure: Expecting non-zero exit from builder and args: ${*@Q}"
 
-("$@" 2>&1) | @coreutils@/bin/tee $TMPDIR/testBuildFailure.log \
+("$@" 2>&1) | @coreutils@/bin/tee "$TMPDIR"/testBuildFailure.log \
   | while IFS= read -r ln; do
     echo "original builder: $ln"
   done
@@ -59,15 +59,15 @@ defOutPath=${outputPaths[0]}
 
 if [[ ! -d $defOutPath ]]; then
   if [[ -e $defOutPath ]]; then
-    @coreutils@/bin/mv $defOutPath $TMPDIR/out-node
-    @coreutils@/bin/mkdir $defOutPath
-    @coreutils@/bin/mv $TMPDIR/out-node $defOutPath/result
+    @coreutils@/bin/mv "$defOutPath" "$TMPDIR"/out-node
+    @coreutils@/bin/mkdir "$defOutPath"
+    @coreutils@/bin/mv "$TMPDIR"/out-node "$defOutPath"/result
   fi
 fi
 
-@coreutils@/bin/mkdir -p $defOutPath
-@coreutils@/bin/mv $TMPDIR/testBuildFailure.log $defOutPath/testBuildFailure.log
-echo $r >$defOutPath/testBuildFailure.exit
+@coreutils@/bin/mkdir -p "$defOutPath"
+@coreutils@/bin/mv "$TMPDIR"/testBuildFailure.log "$defOutPath"/testBuildFailure.log
+echo "$r" >"$defOutPath"/testBuildFailure.exit
 
 # ------------------------------------------------------
 # Put empty directories in place for any missing outputs

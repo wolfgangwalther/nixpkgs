@@ -6,7 +6,7 @@ set -x -eu -o pipefail
 
 MINOR_VERSION="${1:?Must provide a minor version number, like '26', as the only argument}"
 
-WORKDIR=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd -P)
+WORKDIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd -P)
 mkdir --parents --verbose "${WORKDIR}/1_${MINOR_VERSION}"
 
 NIXPKGS_ROOT="$(git rev-parse --show-toplevel)/"
@@ -21,10 +21,10 @@ RKE2_VERSION=${LATEST_TAG_NAME/v/}
 RKE2_COMMIT=$(curl -sS --fail "https://api.github.com/repos/rancher/rke2/git/refs/tags/${LATEST_TAG_NAME}" | yq '.object.sha')
 
 PREFETCH_META=$(nix-prefetch-url --unpack --print-path "https://github.com/rancher/rke2/archive/refs/tags/${LATEST_TAG_NAME}.tar.gz")
-STORE_HASH="$(nix --extra-experimental-features nix-command hash to-sri --type sha256 ${PREFETCH_META%%$'\n'*})"
+STORE_HASH="$(nix --extra-experimental-features nix-command hash to-sri --type sha256 "${PREFETCH_META%%$'\n'*}")"
 STORE_PATH="${PREFETCH_META##*$'\n'}"
 
-cd ${STORE_PATH}
+cd "${STORE_PATH}"
 # Used in scripts/version.sh
 GITHUB_ACTION_TAG=${LATEST_TAG_NAME}
 DRONE_COMMIT=${RKE2_COMMIT}
@@ -35,7 +35,7 @@ set -u
 
 ETCD_BUILD=$(grep "images.DefaultEtcdImage" scripts/build-binary | sed 's/.*-\(build[0-9]*\)$/\1/')
 ETCD_VERSION="${ETCD_VERSION}-${ETCD_BUILD}"
-cd ${WORKDIR}
+cd "${WORKDIR}"
 
 FAKE_HASH="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
@@ -77,7 +77,7 @@ EOF
 
 RKE2_VENDOR_HASH=$(nurl -e "(import $NIXPKGS_ROOT. {}).rke2_1_${MINOR_VERSION}.goModules")
 if [ -n "${RKE2_VENDOR_HASH:-}" ]; then
-    sed -i "s#${FAKE_HASH}#${RKE2_VENDOR_HASH}#g" ${WORKDIR}/1_${MINOR_VERSION}/versions.nix
+    sed -i "s#${FAKE_HASH}#${RKE2_VENDOR_HASH}#g" "${WORKDIR}"/1_"${MINOR_VERSION}"/versions.nix
 else
     echo "Update failed. 'RKE2_VENDOR_HASH' is empty."
     exit 1

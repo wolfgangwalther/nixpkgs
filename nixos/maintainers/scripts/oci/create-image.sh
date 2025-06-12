@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-export NIX_PATH=nixpkgs=$(dirname $(readlink -f $0))/../../../..
-export NIXOS_CONFIG=$(dirname $(readlink -f $0))/../../../modules/virtualisation/oci-image.nix
+export NIX_PATH=nixpkgs=$(dirname $(readlink -f "$0"))/../../../..
+export NIXOS_CONFIG=$(dirname $(readlink -f "$0"))/../../../modules/virtualisation/oci-image.nix
 
 if (( $# < 1 )); then
     (

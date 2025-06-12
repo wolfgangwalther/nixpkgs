@@ -16,8 +16,8 @@ fixupCFlagsForDarwin() {
     # tuple, that’s not considered a stable interface, so the Wine derivation will provide them:
     # - for Darwin: The source is `stdenv.cc.suffixSalt`; and
     # - for MinGW: The source is the `suffixSalt`` attribute of each of the `mingwGccs`.
-    export NIX_CFLAGS_COMPILE_@darwinSuffixSalt@=${NIX_CFLAGS_COMPILE-}
-    export NIX_LDFLAGS_@darwinSuffixSalt@=${NIX_LDFLAGS-}
+    export NIX_CFLAGS_COMPILE_@darwinSuffixSalt@="${NIX_CFLAGS_COMPILE-}"
+    export NIX_LDFLAGS_@darwinSuffixSalt@="${NIX_LDFLAGS-}"
     for mingwSalt in @mingwGccsSuffixSalts@; do
         echo removing @darwinSuffixSalt@-specific flags from NIX_CFLAGS_COMPILE for $mingwSalt
         export NIX_CFLAGS_COMPILE_$mingwSalt+="$(sed "$cflagsFilter" <<< "$NIX_CFLAGS_COMPILE")"

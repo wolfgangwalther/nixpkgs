@@ -3,7 +3,7 @@
 
 set -eou pipefail
 
-PACKAGE_DIR=$(realpath $(dirname $0))
+PACKAGE_DIR=$(realpath $(dirname "$0"))
 
 latestVersion=$(curl ${GITHUB_TOKEN:+-u ":$GITHUB_TOKEN"} -sL https://api.github.com/repos/beekeeper-studio/beekeeper-studio/releases/latest | jq --raw-output .tag_name | sed 's/^v//')
 
@@ -17,4 +17,4 @@ fi
 nix-update beekeeper-studio --version "$latestVersion" || true
 
 hash=$(nix hash convert --to sri --hash-algo sha256 $(nix-prefetch-url "$(nix eval -f . --raw beekeeper-studio.src.url --system aarch64-linux)"))
-update-source-version beekeeper-studio $latestVersion $hash --system=aarch64-linux --ignore-same-version
+update-source-version beekeeper-studio "$latestVersion" "$hash" --system=aarch64-linux --ignore-same-version

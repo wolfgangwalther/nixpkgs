@@ -19,7 +19,7 @@ fi
 # but allows us to upload direct to a disk image
 # thereby avoid storage accounts (and naming them) entirely!
 if ! az disk show -g "${group}" -n "${img_name}" &>/dev/null; then
-  bytes="$(stat -c %s ${img_file})"
+  bytes="$(stat -c %s "${img_file}")"
   size="30"
   az disk create \
     --resource-group "${group}" \

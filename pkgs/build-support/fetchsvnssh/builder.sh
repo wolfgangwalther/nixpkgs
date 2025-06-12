@@ -8,4 +8,4 @@ fi
 # server's certificate.  This is perfectly safe: we don't care
 # whether the server is being spoofed --- only the cryptographic
 # hash of the output matters.
-expect -f $sshSubversion "$username" "$password" "$rev" "$url" $out
+expect -f "$sshSubversion" "$username" "$password" "$rev" "$url" "$out"

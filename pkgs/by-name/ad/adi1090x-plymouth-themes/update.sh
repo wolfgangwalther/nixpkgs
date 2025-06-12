@@ -19,7 +19,7 @@ printf '{\n' > "$dirname/shas.nix"
 while
   read -r file_path
 do
-    name="$(basename $file_path)"
+    name="$(basename "$file_path")"
     name="${name/.tar.gz/}"
 
     printf '  "%s" = {\n    url = "%s";\n    sha = "%s";\n  };\n' "${name}" "$file_path" "$(nix-prefetch-url "$file_path")" >>"$dirname/shas.nix"

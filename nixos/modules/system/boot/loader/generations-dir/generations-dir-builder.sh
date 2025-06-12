@@ -31,14 +31,14 @@ declare -A filesCopied
 
 copyToKernelsDir() {
     local src="$1"
-    local dst="/boot/kernels/$(cleanName $src)"
+    local dst="/boot/kernels/$(cleanName "$src")"
     # Don't copy the file if $dst already exists.  This means that we
     # have to create $dst atomically to prevent partially copied
     # kernels or initrd if this script is ever interrupted.
-    if ! test -e $dst; then
-        local dstTmp=$dst.tmp.$$
-        cp $src $dstTmp
-        mv $dstTmp $dst
+    if ! test -e "$dst"; then
+        local dstTmp="$dst".tmp.$$
+        cp "$src" "$dstTmp"
+        mv "$dstTmp" "$dst"
     fi
     filesCopied[$dst]=1
     result=$dst
@@ -49,25 +49,25 @@ copyToKernelsDir() {
 addEntry() {
     local path="$1"
     local generation="$2"
-    local outdir=/boot/system-$generation
+    local outdir=/boot/system-"$generation"
 
-    if ! test -e $path/kernel -a -e $path/initrd; then
+    if ! test -e "$path"/kernel -a -e "$path"/initrd; then
         return
     fi
 
-    local kernel=$(readlink -f $path/kernel)
-    local initrd=$(readlink -f $path/initrd)
+    local kernel=$(readlink -f "$path"/kernel)
+    local initrd=$(readlink -f "$path"/initrd)
 
     if test -n "@copyKernels@"; then
-        copyToKernelsDir $kernel; kernel=$result
-        copyToKernelsDir $initrd; initrd=$result
+        copyToKernelsDir "$kernel"; kernel=$result
+        copyToKernelsDir "$initrd"; initrd=$result
     fi
 
-    mkdir -p $outdir
-    ln -sf $(readlink -f $path) $outdir/system
-    ln -sf $(readlink -f $path/init) $outdir/init
-    ln -sf $initrd $outdir/initrd
-    ln -sf $kernel $outdir/kernel
+    mkdir -p "$outdir"
+    ln -sf $(readlink -f "$path") "$outdir"/system
+    ln -sf $(readlink -f "$path"/init) "$outdir"/init
+    ln -sf "$initrd" "$outdir"/initrd
+    ln -sf "$kernel" "$outdir"/kernel
 
     if test $(readlink -f "$path") = "$default"; then
       cp "$kernel" /boot/nixos-kernel
@@ -76,10 +76,10 @@ addEntry() {
 
       mkdir -p /boot/default
       # ln -sfT: overrides target even if it exists.
-      ln -sfT $(readlink -f $path) /boot/default/system
-      ln -sfT $(readlink -f $path/init) /boot/default/init
-      ln -sfT $initrd /boot/default/initrd
-      ln -sfT $kernel /boot/default/kernel
+      ln -sfT $(readlink -f "$path") /boot/default/system
+      ln -sfT $(readlink -f "$path"/init) /boot/default/init
+      ln -sfT "$initrd" /boot/default/initrd
+      ln -sfT "$kernel" /boot/default/kernel
     fi
 }
 
@@ -94,7 +94,7 @@ for generation in $(
     | sed 's/system-\([0-9]\+\)-link/\1/' \
     | sort -n -r); do
     link=/nix/var/nix/profiles/system-$generation-link
-    addEntry $link $generation
+    addEntry "$link" "$generation"
 done
 
 # Remove obsolete files from /boot/kernels.

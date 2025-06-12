@@ -16,12 +16,12 @@ attr_path() {
 
 default() {
   local p="$(attr_path "$1")"
-  (cd "$root" && nix-instantiate --eval --strict -A $p.meta.position | sed -re 's/^"(.*):[0-9]+"$/\1/')
+  (cd "$root" && nix-instantiate --eval --strict -A "$p".meta.position | sed -re 's/^"(.*):[0-9]+"$/\1/')
 }
 
 version() {
   local p="$(attr_path "$1")"
-  (cd "$root" && nix-instantiate --eval --strict -A $p.version | tr -d '"')
+  (cd "$root" && nix-instantiate --eval --strict -A "$p".version | tr -d '"')
 }
 
 src_url() {

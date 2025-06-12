@@ -10,8 +10,8 @@ latest="$(curl -sS https://breitbandmessung.de/desktop-app | \
   rg '.*Aktuelle Version der Desktop-App lautet:\s*([.0-9]+).*' -r '$1')"
 
 if [[ $current != $latest ]]; then
-  linux_hash="$(nix store prefetch-file --json https://download.breitbandmessung.de/bbm/Breitbandmessung-${latest}-linux.deb | jq -r .hash)"
-  darwin_hash="$(nix store prefetch-file --json https://download.breitbandmessung.de/bbm/Breitbandmessung-${latest}-mac.dmg | jq -r .hash)"
+  linux_hash="$(nix store prefetch-file --json https://download.breitbandmessung.de/bbm/Breitbandmessung-"${latest}"-linux.deb | jq -r .hash)"
+  darwin_hash="$(nix store prefetch-file --json https://download.breitbandmessung.de/bbm/Breitbandmessung-"${latest}"-mac.dmg | jq -r .hash)"
 
   cat <<EOF >"$PACKAGE_DIR/sources.nix"
 {

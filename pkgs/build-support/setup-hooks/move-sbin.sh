@@ -8,12 +8,12 @@ _moveSbin() {
     if [ "${dontMoveSbin-}" = 1 ]; then return; fi
     if [ ! -e "$prefix/sbin" -o -L "$prefix/sbin" ]; then return; fi
     echo "moving $prefix/sbin/* to $prefix/bin"
-    mkdir -p $prefix/bin
+    mkdir -p "$prefix"/bin
     shopt -s dotglob
     for i in $prefix/sbin/*; do
-        mv "$i" $prefix/bin
+        mv "$i" "$prefix"/bin
     done
     shopt -u dotglob
-    rmdir $prefix/sbin
-    ln -s bin $prefix/sbin
+    rmdir "$prefix"/sbin
+    ln -s bin "$prefix"/sbin
 }

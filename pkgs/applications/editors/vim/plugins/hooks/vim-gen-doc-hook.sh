@@ -6,7 +6,7 @@ vimPluginGenTags() {
     echo "Executing vimPluginGenTags"
 
     target="$out/@rtpPath@"
-    mkdir -p $out/@rtpPath@
+    mkdir -p "$out"/@rtpPath@
 
     # build help tags
     if [ -d "$target/doc" ]; then
@@ -20,7 +20,7 @@ vimPluginGenTags() {
     fi
 
     if [ -n "$addonInfo" ]; then
-        echo "$addonInfo" > $target/addon-info.json
+        echo "$addonInfo" > "$target"/addon-info.json
     fi
 
     echo "Finished executing vimPluginGenTags"

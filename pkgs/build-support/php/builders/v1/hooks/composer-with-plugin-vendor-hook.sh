@@ -16,16 +16,16 @@ source @phpScriptUtils@
 composerWithPluginConfigureHook() {
     echo "Executing composerWithPluginConfigureHook"
 
-    mkdir -p $out
+    mkdir -p "$out"
 
     export COMPOSER_HOME=$out
 
     if [[ -e "$composerLock" ]]; then
-        cp $composerLock $out/composer.lock
+        cp "$composerLock" "$out"/composer.lock
     fi
 
-    cp $composerJson $out/composer.json
-    cp -ar $src $out/src
+    cp "$composerJson" "$out"/composer.json
+    cp -ar "$src" "$out"/src
 
     if [[ ! -f "$out/composer.lock" ]]; then
         setComposerRootVersion
@@ -89,5 +89,5 @@ composerWithPluginInstallHook() {
 }
 
 composerWithPluginInstallCheckHook() {
-    composer global show $pluginName
+    composer global show "$pluginName"
 }

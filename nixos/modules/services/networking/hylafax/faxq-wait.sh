@@ -22,7 +22,7 @@ do
     exit 0
   fi
   # if i reached 0, modems probably failed to initialize
-  if test $i -eq 0
+  if test "$i" -eq 0
   then
     echo "warning: modem initialization timed out"
   fi

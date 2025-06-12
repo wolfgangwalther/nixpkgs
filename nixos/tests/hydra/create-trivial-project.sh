@@ -14,7 +14,7 @@ PROJECT_NAME="trivial"
 JOBSET_NAME="trivial"
 EXPR_PATH=${EXPR_PATH:-}
 
-if [ -z $EXPR_PATH ]; then
+if [ -z "$EXPR_PATH" ]; then
    echo "Environment variable EXPR_PATH must be set"
    exit 1
 fi

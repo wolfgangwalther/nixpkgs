@@ -19,7 +19,7 @@ for i in \
     "aarch64-darwin macos-aarch64"; do
     set -- $i
     prefetch=$(nix-prefetch-url "https://github.com/cloud-fs/cloud-fs.github.io/releases/download/v$latestVersion/clouddrive-2-$2-$latestVersion.tgz")
-    hash=$(nix-hash --type sha256 --to-sri $prefetch)
+    hash=$(nix-hash --type sha256 --to-sri "$prefetch")
 
-    update-source-version clouddrive2 $latestVersion $hash --system=$1 --ignore-same-version
+    update-source-version clouddrive2 "$latestVersion" "$hash" --system="$1" --ignore-same-version
 done

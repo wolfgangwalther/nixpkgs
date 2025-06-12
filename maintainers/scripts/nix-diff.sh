@@ -116,14 +116,14 @@ neg_gen() {
         echo " generation $from" >&2
         return 1
     fi
-    echo $tmp
+    echo "$tmp"
 }
 
 match() {
     argv=("$@")
     for i in $(seq $(($#-1))); do
         if grep -E "^${argv[$i]}\$" <(echo "$1") >/dev/null; then
-            echo $i
+            echo "$i"
             return
         fi
     done
@@ -133,7 +133,7 @@ match() {
 case $(match "$1" '' '[0-9]+' '[0-9]+\.\.[0-9]+' '~[0-9]+') in
     1)
         diffTo=$(current_gen)
-        diffFrom=$(neg_gen $diffTo 1)
+        diffFrom=$(neg_gen "$diffTo" 1)
         (($? == 1)) && usage_tip
         ;;
     2)
@@ -146,7 +146,7 @@ case $(match "$1" '' '[0-9]+' '[0-9]+\.\.[0-9]+' '~[0-9]+') in
         ;;
     4)
         diffTo=$(current_gen)
-        diffFrom=$(neg_gen $diffTo ${1#*~})
+        diffFrom=$(neg_gen "$diffTo" "${1#*~}")
         (($? == 1)) && usage_tip
         ;;
     0)
@@ -191,7 +191,7 @@ print_tag() {
 }
 
 if [ -n "$opt_query" ]; then
-    print_tag $diffFrom
+    print_tag "$diffFrom"
     cat "$versA" \
         | sed -r 's:^[^-]+-(.*)$:    \1:'
 
@@ -200,13 +200,13 @@ fi
 
 if [ -n "$opt_log" ]; then
     gens=$(for gen in $(list_gens); do
-               ((diffFrom < gen && gen < diffTo)) && echo $gen
+               ((diffFrom < gen && gen < diffTo)) && echo "$gen"
            done)
     # Force the $diffTo generation to be included in this list, instead of using
     # `gen <= diffTo` in the preceding loop, so we encounter an error upon the
     # event of its nonexistence.
     gens=$(echo "$gens"
-           echo $diffTo)
+           echo "$diffTo")
 else
     gens=$diffTo
 fi
@@ -255,7 +255,7 @@ for gen in $gens; do
         lines=$(wc -l "$out" | cut -d' ' -f1)
         tag=$(print_tag "$gen")
         (( $? != 0 )) && exit 1
-        if [ $lines -eq 0 ]; then
+        if [ "$lines" -eq 0 ]; then
             echo "$tag   (no change)"
         else
             echo "$tag"

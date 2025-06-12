@@ -38,21 +38,21 @@ case "$buildmonth" in
     '11'|'01') month='12' ;;
 esac
 
-ECLIPSES_JSON=$(dirname $0)/eclipses.json;
+ECLIPSES_JSON=$(dirname "$0")/eclipses.json;
 
 t=$(mktemp);
 # note: including platform_major, platform_minor, and version may seem redundant
 # the first two are needed for the derivation itself; the third is necessary so
 # that nixpkgs-update can see that the version changes as a result of this update
 # script.
-cat $ECLIPSES_JSON | jq ". + {platform_major: \"${platform_major}\",platform_minor: \"${platform_minor}\",version:\"${platform_major}.${platform_minor}\",year: \"${year}\",month: \"${month}\",buildmonth: \"${buildmonth}\",dayHourMinute: \"${builddaytime}\"}" > $t;
-mv $t $ECLIPSES_JSON;
+cat "$ECLIPSES_JSON" | jq ". + {platform_major: \"${platform_major}\",platform_minor: \"${platform_minor}\",version:\"${platform_major}.${platform_minor}\",year: \"${year}\",month: \"${month}\",buildmonth: \"${buildmonth}\",dayHourMinute: \"${builddaytime}\"}" > "$t";
+mv "$t" "$ECLIPSES_JSON";
 
 # prefetch new download hashes
 
-for id in $(cat $ECLIPSES_JSON | jq -r '.eclipses | keys | .[]'); do
+for id in $(cat "$ECLIPSES_JSON" | jq -r '.eclipses | keys | .[]'); do
     for arch in x86_64 aarch64; do
-        if [ $(cat $ECLIPSES_JSON | jq -r ".eclipses.${id}.dropUrl") == "true" ]; then
+        if [ $(cat "$ECLIPSES_JSON" | jq -r ".eclipses.${id}.dropUrl") == "true" ]; then
             url="https://www.eclipse.org/downloads/download.php?r=1&nf=1&file=/eclipse/downloads/drops${platform_major}/R-${platform_major}.${platform_minor}-${timestamp}/eclipse-${id}-${platform_major}.${platform_minor}-linux-gtk-${arch}.tar.gz";
         else
             url="https://www.eclipse.org/downloads/download.php?r=1&nf=1&file=/technology/epp/downloads/release/${year}-${month}/R/eclipse-${id}-${year}-${month}-R-linux-gtk-${arch}.tar.gz";
@@ -62,7 +62,7 @@ for id in $(cat $ECLIPSES_JSON | jq -r '.eclipses | keys | .[]'); do
         h=$(nix store prefetch-file --json "$url" | jq -r .hash);
 
         t=$(mktemp);
-        cat $ECLIPSES_JSON | jq -r ".eclipses.${id}.hashes.${arch} = \"${h}\"" > $t;
-        mv $t $ECLIPSES_JSON;
+        cat "$ECLIPSES_JSON" | jq -r ".eclipses.${id}.hashes.${arch} = \"${h}\"" > "$t";
+        mv "$t" "$ECLIPSES_JSON";
     done
 done

@@ -16,8 +16,8 @@ fi
 binaryDist=$1
 
 hasBinaries=false
-for bin in $(find $binaryDist -executable -type f) :; do
-    if test $bin = ":"; then
+for bin in $(find "$binaryDist" -executable -type f) :; do
+    if test "$bin" = ":"; then
         $hasBinaries || \
             echo "No patchable found in this directory."
         break
@@ -29,8 +29,8 @@ for bin in $(find $binaryDist -executable -type f) :; do
     hasLibraries=false
     unset interpreter
     unset addRPath
-    for lib in $(strings $bin | grep '^\(/\|\)lib.*\.so' | sort | uniq) :; do
-        if test $lib = ":"; then
+    for lib in $(strings "$bin" | grep '^\(/\|\)lib.*\.so' | sort | uniq) :; do
+        if test "$lib" = ":"; then
             $hasLibraries || \
                 echo "  This program is a script or it is statically linked."
             break
@@ -40,12 +40,12 @@ for bin in $(find $binaryDist -executable -type f) :; do
         echo "  $lib:";
 
         libPath=$lib
-        lib=$(basename $lib)
+        lib=$(basename "$lib")
 
         #versionLessLib=$(echo $lib | sed 's,[.][.0-9]*$,,')
 
         libs="$(
-            find /nix/store/*/lib* \( -type f -or -type l \) -name $lib |
+            find /nix/store/*/lib* \( -type f -or -type l \) -name "$lib" |
             grep -v '\(bootstrap-tools\|system-path\|user-environment\|extra-utils\)'
         )"
 
@@ -62,11 +62,11 @@ for bin in $(find $binaryDist -executable -type f) :; do
         )
 
         if test "$names" = "glibc"; then names="glibc"; fi
-        if echo $names | grep -c "gcc" &> /dev/null; then names="stdenv.cc.cc"; fi
+        if echo "$names" | grep -c "gcc" &> /dev/null; then names="stdenv.cc.cc"; fi
 
-        if test $lib != $libPath; then
+        if test "$lib" != "$libPath"; then
             interpreter="--interpreter \${$names}/lib/$lib"
-        elif echo $addRPath | grep -c "$names" &> /dev/null; then
+        elif echo "$addRPath" | grep -c "$names" &> /dev/null; then
             :
         else
             addRPath=${addRPath+$addRPath:}"\${$names}/lib"

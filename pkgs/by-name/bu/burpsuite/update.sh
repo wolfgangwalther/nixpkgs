@@ -32,7 +32,7 @@ sed -i \
   -e "/productName = \"pro\"/,/hash =/ {
         s|sha256-[^\"]*|$pro_sri|
      }" \
-  $SCRIPT_DIR/package.nix
+  "$SCRIPT_DIR"/package.nix
 
 echo "burpsuite → $version"
 echo "  community: $comm_sri"

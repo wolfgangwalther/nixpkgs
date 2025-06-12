@@ -65,8 +65,8 @@ fi
 
 tmptpl=tmp.fetch-kde-qt.$pkgname.XXXXXXXXXX
 
-tmp=$(mktemp -d $tmptpl)
-pushd $tmp >/dev/null
+tmp=$(mktemp -d "$tmptpl")
+pushd "$tmp" >/dev/null
 echo "tempdir is $tmp"
 
 wgetargs=('--quiet' '--show-progress')
@@ -137,18 +137,18 @@ echo "$urllist" | xargs wget "${wgetargs[@]}" -nH -r -c --no-parent && {
     done
 }
 
-csv=$(mktemp $tmptpl.csv)
+csv=$(mktemp "$tmptpl".csv)
 echo "writing temporary file $csv ..."
 find . -type f -name '*.sha256' | while read sha256file; do
     src="${sha256file%.*}" # remove extension
-    sha256=$(cat $sha256file | cut -d' ' -f1) # base16
-    sha256=$(nix-hash --type sha256 --to-base32 $sha256)
+    sha256=$(cat "$sha256file" | cut -d' ' -f1) # base16
+    sha256=$(nix-hash --type sha256 --to-base32 "$sha256")
     # Sanitize file name
     filename=$(basename "$src" | tr '@' '_')
     nameVersion="${filename%.tar.*}"
     name=$(echo "$nameVersion" | sed -e 's,-[[:digit:]].*,,' | sed -e 's,-opensource-src$,,' | sed -e 's,-everywhere-src$,,')
     version=$(echo "$nameVersion" | sed -e 's,^\([[:alpha:]][[:alnum:]]*-\)\+,,')
-    echo "$name,$version,$src,$filename,$sha256" >>$csv
+    echo "$name,$version,$src,$filename,$sha256" >>"$csv"
 done
 
 files_before=$(grep -c 'src = ' "$SRCS")
@@ -162,12 +162,12 @@ cat >"$SRCS" <<EOF
 {
 EOF
 
-gawk -F , "{ print \$1 }" $csv | sort | uniq | while read name; do
-    versions=$(gawk -F , "/^$name,/ { print \$2 }" $csv)
+gawk -F , "{ print \$1 }" "$csv" | sort | uniq | while read name; do
+    versions=$(gawk -F , "/^$name,/ { print \$2 }" "$csv")
     latestVersion=$(echo "$versions" | sort -rV | head -n 1)
-    src=$(gawk -F , "/^$name,$latestVersion,/ { print \$3 }" $csv)
-    filename=$(gawk -F , "/^$name,$latestVersion,/ { print \$4 }" $csv)
-    sha256=$(gawk -F , "/^$name,$latestVersion,/ { print \$5 }" $csv)
+    src=$(gawk -F , "/^$name,$latestVersion,/ { print \$3 }" "$csv")
+    filename=$(gawk -F , "/^$name,$latestVersion,/ { print \$4 }" "$csv")
+    sha256=$(gawk -F , "/^$name,$latestVersion,/ { print \$5 }" "$csv")
     url="${src:2}"
     cat >>"$SRCS" <<EOF
   $name = {
@@ -191,6 +191,6 @@ echo "compare:"
 echo "git diff $srcsrel"
 
 popd >/dev/null
-rm -fr $tmp >/dev/null
+rm -fr "$tmp" >/dev/null
 
-rm -f $csv >/dev/null
+rm -f "$csv" >/dev/null

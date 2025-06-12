@@ -8,7 +8,7 @@ yarnBuildHook() {
 
     if ! type node > /dev/null 2>&1 ; then
         echo yarnConfigHook WARNING: a node interpreter was not added to the \
-            build, and is probably required to run \'yarn $yarnBuildHook\'. \
+            build, and is probably required to run \'yarn "$yarnBuildHook"\'. \
             A common symptom of this is getting \'command not found\' errors \
             for Nodejs related tools.
     fi

@@ -1,8 +1,8 @@
 set -e
 
-mkdir -p $out/bin
+mkdir -p "$out"/bin
 
-cat > $out/bin/control <<EOF
+cat > "$out"/bin/control <<EOF
 mkdir -p $logDir
 chown -R $user $logDir
 export PATH=$PATH:$su/bin
@@ -67,4 +67,4 @@ then
 fi
 EOF
 
-chmod +x $out/bin/*
+chmod +x "$out"/bin/*

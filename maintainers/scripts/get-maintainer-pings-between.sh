@@ -42,7 +42,7 @@ eval_in_worktree() (
     nix-build ci -A eval.singleSystem \
         --arg evalSystem "$system" \
         --arg attrpathFile "$workdir/paths/paths.json" \
-        --arg chunkSize ${CHUNK_SIZE:-10000} \
+        --arg chunkSize "${CHUNK_SIZE:-10000}" \
         -o "$workdir/intermediates/.intermediate-1" >&2
 
     # eval.combine nix-build needs a directory, not a symlink

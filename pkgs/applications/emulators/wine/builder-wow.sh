@@ -2,13 +2,13 @@
 preFlags="${configureFlags}"
 
 unpackPhase
-cd $TMP/$sourceRoot
+cd "$TMP"/"$sourceRoot"
 patchPhase
 
 configureScript=$TMP/$sourceRoot/configure
-mkdir -p $TMP/wine-wow $TMP/wine64
+mkdir -p "$TMP"/wine-wow "$TMP"/wine64
 
-cd $TMP/wine64
+cd "$TMP"/wine64
 sourceRoot=`pwd`
 configureFlags="${preFlags} --enable-win64"
 configurePhase
@@ -35,7 +35,7 @@ for ELEMENT in "${LIST_ARRAY[@]}"; do
 done
 PKG_CONFIG_PATH=$(IFS=":"; echo "${NEW_LIST_ARRAY[*]}")
 
-cd $TMP/wine-wow
+cd "$TMP"/wine-wow
 sourceRoot=`pwd`
 configureFlags="${preFlags} --with-wine64=../wine64"
 configurePhase
@@ -43,7 +43,7 @@ buildPhase
 # checkPhase
 
 eval "$preInstall"
-cd $TMP/wine-wow && make install -j$NIX_BUILD_CORES
-cd $TMP/wine64 && make install -j$NIX_BUILD_CORES
+cd "$TMP"/wine-wow && make install -j"$NIX_BUILD_CORES"
+cd "$TMP"/wine64 && make install -j"$NIX_BUILD_CORES"
 eval "$postInstall"
 fixupPhase

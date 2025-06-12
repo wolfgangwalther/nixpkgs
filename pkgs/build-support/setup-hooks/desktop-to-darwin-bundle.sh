@@ -158,7 +158,7 @@ convertIconTheme() {
         local foundIcon=NONE
         for iconSize in "${iconSizes[@]}"; do
             for scale in "${!scales[@]}"; do
-                local iconResult=$(findIcon $iconSize $scale)
+                local iconResult=$(findIcon "$iconSize" "$scale")
                 local type=${iconResult%% *}
                 local icon=${iconResult#* }
                 local scaleSuffix=${scales[$scale]}

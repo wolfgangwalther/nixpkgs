@@ -91,7 +91,7 @@ newPkgs() {
         toRemove+=("$expr")
         nixexpr "${!i}" > "$expr"
 
-        nix-env -f "$expr" -qaP --no-name --out-path --show-trace $3 \
+        nix-env -f "$expr" -qaP --no-name --out-path --show-trace "$3" \
             | sort > "${list[$i]}" &
 
         if [ "$parallel" != "true" ]; then

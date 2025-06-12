@@ -59,7 +59,7 @@ variables='{
 }'
 
 post=$(cat <<EOF
-{"query": "$(echo $query)", "variables": $(echo $variables)}
+{"query": "$(echo "$query")", "variables": $(echo "$variables")}
 EOF
 )
 
@@ -68,8 +68,8 @@ json="$(curl -s -X POST https://code.castopod.org/api/graphql \
   -d "$post")"
 
 echo "$json"
-TAG=$(echo $json | jq -r '.data.project.releases.nodes[].tagName')
-ASSET_URL=$(echo $json | jq -r '.data.project.releases.nodes[].assets.links.nodes[].url' | grep .tar.gz$)
+TAG=$(echo "$json" | jq -r '.data.project.releases.nodes[].tagName')
+ASSET_URL=$(echo "$json" | jq -r '.data.project.releases.nodes[].assets.links.nodes[].url' | grep .tar.gz$)
 
 CURRENT_VERSION=$(nix eval -f "$nixpkgs" --raw castopod.version)
 VERSION=${TAG:1}
@@ -81,7 +81,7 @@ fi
 
 SHA256=$(nix-prefetch-url "$ASSET_URL")
 
-URL=$(echo $ASSET_URL | sed -e 's/[\/&]/\\&/g')
+URL=$(echo "$ASSET_URL" | sed -e 's/[\/&]/\\&/g')
 
 sed -e "s/version =.*;/version = \"$VERSION\";/g" \
     -e "s/url =.*;/url = \"$URL\";/g" \

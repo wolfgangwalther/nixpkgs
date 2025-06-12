@@ -8,7 +8,7 @@ if [[ $# != "2" && $# != "3" ]] ; then
   exit 2
 fi
 
-markdown_file="$(realpath ${3:-/dev/null})"
+markdown_file="$(realpath "${3:-/dev/null}")"
 [ -v 3 ] && rm -f "$markdown_file"
 
 # Make sure we are inside the nixpkgs repo, even when called from outside
@@ -45,9 +45,9 @@ log() {
     local -A alert
     alert[warning]="WARNING"
     alert[error]="CAUTION"
-    echo >> $markdown_file
-    echo "> [!${alert[$type]}]" >> $markdown_file
-    echo "> $@" >> $markdown_file
+    echo >> "$markdown_file"
+    echo "> [!${alert[$type]}]" >> "$markdown_file"
+    echo "> $@" >> "$markdown_file"
   fi
 }
 
@@ -108,8 +108,8 @@ while read -r new_commit_sha ; do
           # First line contains commit SHAs, which we already printed.
           $range_diff_common --color | tail -n +2
 
-          echo -e "> <details><summary>Show diff</summary>\n>" >> $markdown_file
-          echo '> ```diff' >> $markdown_file
+          echo -e "> <details><summary>Show diff</summary>\n>" >> "$markdown_file"
+          echo '> ```diff' >> "$markdown_file"
           # The output of `git range-diff` is indented with 4 spaces, which we need to match with the
           # code blocks indent to get proper syntax highlighting on GitHub.
           diff="$($range_diff_common | tail -n +2 | sed -Ee 's/^ {4}/> /g')"
@@ -123,9 +123,9 @@ while read -r new_commit_sha ; do
           if [ "${#diff}" -gt $max_length ]; then
             printf -v diff "%s\n>\n> [...truncated...]" "$(echo "$diff" | head -c $max_length | head -n-1)"
           fi
-          echo "$diff" >> $markdown_file
-          echo '> ```' >> $markdown_file
-          echo "> </details>" >> $markdown_file
+          echo "$diff" >> "$markdown_file"
+          echo '> ```' >> "$markdown_file"
+          echo "> </details>" >> "$markdown_file"
 
           problem=1
         else

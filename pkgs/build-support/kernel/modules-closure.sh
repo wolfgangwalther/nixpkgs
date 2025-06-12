@@ -12,16 +12,16 @@ if ! test -d "$kernel/lib/modules"; then
     fi
 fi
 
-version=$(cd $kernel/lib/modules && ls -d *)
+version=$(cd "$kernel"/lib/modules && ls -d *)
 
 echo "kernel version is $version"
 
 # Determine the dependencies of each root module.
-mkdir -p $out/lib/modules/"$version"
+mkdir -p "$out"/lib/modules/"$version"
 touch closure
 for module in $rootModules; do
     echo "root module: $module"
-    modprobe --config no-config -d $kernel --set-version "$version" --show-depends "$module" \
+    modprobe --config no-config -d "$kernel" --set-version "$version" --show-depends "$module" \
     | while read cmd module args; do
         case "$cmd" in
             builtin)
@@ -41,14 +41,14 @@ for module in $rootModules; do
                 fi
                 echo "$module" >>closure
                 echo "  copying dependency: $module"
-                mkdir -p $(dirname $target)
+                mkdir -p $(dirname "$target")
                 cp "$module" "$target"
                 # If the kernel is compiled with coverage instrumentation, it
                 # contains the paths of the *.gcda coverage data output files
                 # (which it doesn't actually use...).  Get rid of them to prevent
                 # the whole kernel from being included in the initrd.
                 nuke-refs "$target"
-                echo "$target" >> $out/insmod-list;;
+                echo "$target" >> "$out"/insmod-list;;
              *)
                 echo "  unexpected modprobe output: $cmd $module"
                 exit 1;;
@@ -76,11 +76,11 @@ for module in $(< ~-/closure); do
     #
     # For now, the workaround is just to filter out the extraneous lines out
     # of its output.
-    modinfo -b $kernel --set-version "$version" -F firmware $module | grep -v '^name:' | while read -r i; do
+    modinfo -b "$kernel" --set-version "$version" -F firmware "$module" | grep -v '^name:' | while read -r i; do
         echo "firmware for $module: $i"
         for name in "$i" "$i.xz" "$i.zst" ""; do
             [ -z "$name" ] && echo "WARNING: missing firmware $i for module $module"
-            if cp -v --parents --no-preserve=mode lib/firmware/$name "$out" 2>/dev/null; then
+            if cp -v --parents --no-preserve=mode lib/firmware/"$name" "$out" 2>/dev/null; then
                 break
             fi
         done
@@ -88,9 +88,9 @@ for module in $(< ~-/closure); do
 done
 
 for path in $extraFirmwarePaths; do
-    mkdir -p $(dirname $out/lib/firmware/$path)
+    mkdir -p $(dirname "$out"/lib/firmware/"$path")
     for name in "$path" "$path.xz" "$path.zst" ""; do
-        if cp -v --parents --no-preserve=mode lib/firmware/$name "$out" 2>/dev/null; then
+        if cp -v --parents --no-preserve=mode lib/firmware/"$name" "$out" 2>/dev/null; then
             break
         fi
     done
@@ -105,11 +105,11 @@ else
 fi
 
 # copy module ordering hints for depmod
-cp $kernel/lib/modules/"$version"/modules.order $out/lib/modules/"$version"/.
-cp $kernel/lib/modules/"$version"/modules.builtin $out/lib/modules/"$version"/.
+cp "$kernel"/lib/modules/"$version"/modules.order "$out"/lib/modules/"$version"/.
+cp "$kernel"/lib/modules/"$version"/modules.builtin "$out"/lib/modules/"$version"/.
 
-depmod -b $out -a $version
+depmod -b "$out" -a "$version"
 
 # remove original hints from final derivation
-rm $out/lib/modules/"$version"/modules.order
-rm $out/lib/modules/"$version"/modules.builtin
+rm "$out"/lib/modules/"$version"/modules.order
+rm "$out"/lib/modules/"$version"/modules.builtin

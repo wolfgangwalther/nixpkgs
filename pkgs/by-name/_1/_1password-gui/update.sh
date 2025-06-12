@@ -58,7 +58,7 @@ for channel in stable beta; do
   for os in linux darwin; do
     for arch in x86_64 aarch64; do
       version="${versions[${channel}-${os}]}"
-      url=$(mk_url ${os} ${channel} ${arch} ${version})
+      url=$(mk_url ${os} ${channel} ${arch} "${version}")
       nix store prefetch-file --json "${url}" | jq "
         {
           \"${channel}\": {

@@ -29,7 +29,7 @@ ipfs_add() {
         echo "[0m[01;36m=IPFS=[0m add $ipfs"
         tar --owner=root --group=root -cWf "source.tar" $(echo *)
         res=$(curl -# -F "file=@source.tar" "localhost:5001/api/v0/tar/add" | sed 's/.*"Hash":"\(.*\)".*/\1/')
-        if [ $ipfs != $res ]; then
+        if [ "$ipfs" != "$res" ]; then
             echo "\`ipfs tar add' results in $res when $ipfs is expected"
             exit 1
         fi
@@ -68,8 +68,8 @@ if test -n "$url"; then
         if $curl "$url" -O; then
             set +o noglob
             tmpfile=$(echo *)
-            unpackFile $tmpfile
-            rm $tmpfile
+            unpackFile "$tmpfile"
+            rm "$tmpfile"
             ipfs_add
             mv $(echo *) "$out"
             finish

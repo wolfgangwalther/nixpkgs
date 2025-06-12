@@ -26,7 +26,7 @@ _makeSymlinksRelative() {
         echo "rewriting symlink $f to be relative to $prefix"
         ln -snrf "$symlinkTarget" "$f"
 
-    done < <(find $prefix -type l -print0)
+    done < <(find "$prefix" -type l -print0)
 }
 
 _makeSymlinksRelativeInAllOutputs() {

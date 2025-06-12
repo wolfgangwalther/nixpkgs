@@ -81,11 +81,11 @@ stripDirs() {
         # Do not strip lib/debug. This is a directory used by setup-hooks/separate-debug-info.sh.
         # Print out each file's device and inode (which will be the same if two files are hardlinked
         # or are the same file found through different symlinks), followed by its path...
-        find $paths -type f "${excludeFlags[@]}" -a '!' -path "$prefix/lib/debug/*" -printf '%D-%i,%p\0' |
+        find "$paths" -type f "${excludeFlags[@]}" -a '!' -path "$prefix/lib/debug/*" -printf '%D-%i,%p\0' |
             # ... sort/uniq by device/inode, then cut them out and keep the path, ...
             sort -t, -k1,1 -u -z | cut -d, -f2- -z |
             # and finally strip each unique path in parallel.
-            xargs -r -0 -n1 -P "$NIX_BUILD_CORES" -- $cmd $stripFlags 2>"$striperr" || exit_code=$?
+            xargs -r -0 -n1 -P "$NIX_BUILD_CORES" -- "$cmd" "$stripFlags" 2>"$striperr" || exit_code=$?
         # xargs exits with status code 123 if some but not all of the
         # processes fail. We don't care if some of the files couldn't
         # be stripped, so ignore specifically this code.
@@ -97,6 +97,6 @@ stripDirs() {
         #   ld: ...-i686-w64-mingw32-stage-final-gcc-13.0.0-lib/i686-w64-mingw32/lib/libstdc++.dll.a:
         #     error adding symbols: archive has no index; run ranlib to add one
         # Restore the index by running 'ranlib'.
-        find $paths -name '*.a' -type f -exec $ranlibCmd '{}' \; 2>/dev/null
+        find "$paths" -name '*.a' -type f -exec "$ranlibCmd" '{}' \; 2>/dev/null
     fi
 }

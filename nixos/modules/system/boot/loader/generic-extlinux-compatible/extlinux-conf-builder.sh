@@ -42,8 +42,8 @@ done
 
 [ "$timeout" = "" -o "$default" = "" ] && usage
 
-mkdir -p $target/nixos
-mkdir -p $target/extlinux
+mkdir -p "$target"/nixos
+mkdir -p "$target"/extlinux
 
 # Convert a path to a file in the Nix store such as
 # /nix/store/<hash>-<name>/file to <hash>-<name>-<file>.
@@ -57,14 +57,14 @@ declare -A filesCopied
 
 copyToKernelsDir() {
     local src=$(readlink -f "$1")
-    local dst="$target/nixos/$(cleanName $src)"
+    local dst="$target/nixos/$(cleanName "$src")"
     # Don't copy the file if $dst already exists.  This means that we
     # have to create $dst atomically to prevent partially copied
     # kernels or initrd if this script is ever interrupted.
-    if ! test -e $dst; then
-        local dstTmp=$dst.tmp.$$
-        cp -r $src $dstTmp
-        mv $dstTmp $dst
+    if ! test -e "$dst"; then
+        local dstTmp="$dst".tmp.$$
+        cp -r "$src" "$dstTmp"
+        mv "$dstTmp" "$dst"
     fi
     filesCopied[$dst]=1
     result=$dst
@@ -76,7 +76,7 @@ addEntry() {
     local path=$(readlink -f "$1")
     local tag="$2" # Generation number or 'default'
 
-    if ! test -e $path/kernel -a -e $path/initrd; then
+    if ! test -e "$path"/kernel -a -e "$path"/initrd; then
         return
     fi
 
@@ -87,11 +87,11 @@ addEntry() {
         copyToKernelsDir "$dtbDir"; dtbs=$result
     fi
 
-    timestampEpoch=$(stat -L -c '%Z' $path)
+    timestampEpoch=$(stat -L -c '%Z' "$path")
 
-    timestamp=$(date "+%Y-%m-%d %H:%M" -d @$timestampEpoch)
-    nixosLabel="$(cat $path/nixos-version)"
-    extraParams="$(cat $path/kernel-params)"
+    timestamp=$(date "+%Y-%m-%d %H:%M" -d @"$timestampEpoch")
+    nixosLabel="$(cat "$path"/nixos-version)"
+    extraParams="$(cat "$path"/kernel-params)"
 
     echo
     echo "LABEL nixos-$tag"
@@ -100,8 +100,8 @@ addEntry() {
     else
         echo "  MENU LABEL NixOS - Configuration $tag ($timestamp - $nixosLabel)"
     fi
-    echo "  LINUX ../nixos/$(basename $kernel)"
-    echo "  INITRD ../nixos/$(basename $initrd)"
+    echo "  LINUX ../nixos/$(basename "$kernel")"
+    echo "  INITRD ../nixos/$(basename "$initrd")"
     echo "  APPEND init=$path/init $extraParams"
 
     if [ -n "$noDeviceTree" ]; then
@@ -111,9 +111,9 @@ addEntry() {
     if [ -d "$dtbDir" ]; then
         # if a dtbName was specified explicitly, use that, else use FDTDIR
         if [ -n "$dtbName" ]; then
-            echo "  FDT ../nixos/$(basename $dtbs)/${dtbName}"
+            echo "  FDT ../nixos/$(basename "$dtbs")/${dtbName}"
         else
-            echo "  FDTDIR ../nixos/$(basename $dtbs)"
+            echo "  FDTDIR ../nixos/$(basename "$dtbs")"
         fi
     else
         if [ -n "$dtbName" ]; then
@@ -125,7 +125,7 @@ addEntry() {
 
 tmpFile="$target/extlinux/extlinux.conf.tmp.$$"
 
-cat > $tmpFile <<EOF
+cat > "$tmpFile" <<EOF
 # Generated file, all changes will be lost on nixos-rebuild!
 
 # Change this to e.g. nixos-42 to temporarily boot to an older configuration.
@@ -135,9 +135,9 @@ TIMEOUT $timeout
 EOF
 
 [ "$menu" == "1" ] \
-  && echo "MENU TITLE ------------------------------------------------------------" >> $tmpFile
+  && echo "MENU TITLE ------------------------------------------------------------" >> "$tmpFile"
 
-addEntry $default default >> $tmpFile
+addEntry "$default" default >> "$tmpFile"
 
 if [ "$numGenerations" -gt 0 ]; then
     # Add up to $numGenerations generations of the system profile to the menu,
@@ -146,19 +146,19 @@ if [ "$numGenerations" -gt 0 ]; then
             (cd /nix/var/nix/profiles && ls -d system-*-link) \
             | sed 's/system-\([0-9]\+\)-link/\1/' \
             | sort -n -r \
-            | head -n $numGenerations); do
+            | head -n "$numGenerations"); do
         link=/nix/var/nix/profiles/system-$generation-link
-        addEntry $link "${generation}-default"
+        addEntry "$link" "${generation}-default"
         for specialisation in $(
-            ls /nix/var/nix/profiles/system-$generation-link/specialisation \
+            ls /nix/var/nix/profiles/system-"$generation"-link/specialisation \
             | sort -n -r); do
             link=/nix/var/nix/profiles/system-$generation-link/specialisation/$specialisation
-            addEntry $link "${generation}-${specialisation}"
+            addEntry "$link" "${generation}-${specialisation}"
         done
-    done >> $tmpFile
+    done >> "$tmpFile"
 fi
 
-mv -f $tmpFile $target/extlinux/extlinux.conf
+mv -f "$tmpFile" "$target"/extlinux/extlinux.conf
 
 # Remove obsolete files from $target/nixos.
 for fn in $target/nixos/*; do

@@ -9,13 +9,13 @@ tmp=$(mktemp --tmpdir -d nixpkgs-dep-license.XXXXXX)
 exitHandler() {
     exitCode=$?
     rm -rf "$tmp"
-    return $exitCode
+    return "$exitCode"
 }
 
 trap "exitHandler" EXIT
 
 # fetch the trace and the drvPath of the attribute.
-nix-instantiate $NIXPKGS -A $attr --show-trace > "$tmp/drvPath" 2> "$tmp/trace" || {
+nix-instantiate "$NIXPKGS" -A "$attr" --show-trace > "$tmp/drvPath" 2> "$tmp/trace" || {
   cat 1>&2 - "$tmp/trace" <<EOF
 An error occurred while evaluating $attr.
 EOF

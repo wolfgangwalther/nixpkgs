@@ -19,5 +19,5 @@ else
         tag="-D NOW"
     fi
 fi
-(cd export && cvs -f -z0 -d "$cvsRoot" export $tag "$module")
-mv export/* $out
+(cd export && cvs -f -z0 -d "$cvsRoot" export "$tag" "$module")
+mv export/* "$out"

@@ -5,7 +5,7 @@ cargoSetupPostUnpackHook() {
     # dependencies. This copies the vendor directory into the build tree and makes
     # it writable. If we're using a tarball, the unpackFile hook already handles
     # this for us automatically.
-    if [ -z $cargoVendorDir ]; then
+    if [ -z "$cargoVendorDir" ]; then
         if [ -d "$cargoDeps" ]; then
             local dest=$(stripHash "$cargoDeps")
             cp -Lr --reflink=auto -- "$cargoDeps" "$dest"
@@ -28,9 +28,9 @@ cargoSetupPostUnpackHook() {
     fi;
 
     tmp_config=$(mktemp)
-    substitute $config $tmp_config \
+    substitute "$config" "$tmp_config" \
       --subst-var-by vendor "$cargoDepsCopy"
-    cat ${tmp_config} >> .cargo/config.toml
+    cat "${tmp_config}" >> .cargo/config.toml
 
     cat >> .cargo/config.toml <<'EOF'
     @cargoConfig@
@@ -49,17 +49,17 @@ cargoSetupPostPatchHook() {
     srcLockfile="$(pwd)/${cargoRoot:+$cargoRoot/}Cargo.lock"
 
     echo "Validating consistency between $srcLockfile and $cargoDepsLockfile"
-    if ! @diff@ $srcLockfile $cargoDepsLockfile; then
+    if ! @diff@ "$srcLockfile" "$cargoDepsLockfile"; then
 
       # If the diff failed, first double-check that the file exists, so we can
       # give a friendlier error msg.
-      if ! [ -e $srcLockfile ]; then
+      if ! [ -e "$srcLockfile" ]; then
         echo "ERROR: Missing Cargo.lock from src. Expected to find it at: $srcLockfile"
         echo "Hint: You can use the cargoPatches attribute to add a Cargo.lock manually to the build."
         exit 1
       fi
 
-      if ! [ -e $cargoDepsLockfile ]; then
+      if ! [ -e "$cargoDepsLockfile" ]; then
         echo "ERROR: Missing lockfile from cargo vendor. Expected to find it at: $cargoDepsLockfile"
         exit 1
       fi
@@ -88,6 +88,6 @@ if [ -z "${dontCargoSetupPostUnpack-}" ]; then
   postUnpackHooks+=(cargoSetupPostUnpackHook)
 fi
 
-if [ -z ${cargoVendorDir-} ]; then
+if [ -z "${cargoVendorDir-}" ]; then
   postPatchHooks+=(cargoSetupPostPatchHook)
 fi

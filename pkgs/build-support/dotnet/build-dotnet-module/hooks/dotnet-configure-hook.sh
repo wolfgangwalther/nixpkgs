@@ -40,7 +40,7 @@ dotnetConfigureHook() {
                 -p:Deterministic=true \
                 -p:NuGetAudit=false \
                 --runtime "$runtimeId" \
-                ${parallelFlag-} \
+                "${parallelFlag-}" \
                 "${dotnetRestoreFlagsArray[@]}" \
                 "${dotnetFlagsArray[@]}"
         done

@@ -1,7 +1,7 @@
 addCMakeParams() {
     # NIXPKGS_CMAKE_PREFIX_PATH is like CMAKE_PREFIX_PATH except cmake
     # will not search it for programs
-    addToSearchPath NIXPKGS_CMAKE_PREFIX_PATH $1
+    addToSearchPath NIXPKGS_CMAKE_PREFIX_PATH "$1"
 }
 
 fixCmakeFiles() {
@@ -49,9 +49,9 @@ cmakeConfigurePhase() {
     # package being built.
     prependToVar cmakeFlags "-DCMAKE_CXX_COMPILER=$CXX"
     prependToVar cmakeFlags "-DCMAKE_C_COMPILER=$CC"
-    prependToVar cmakeFlags "-DCMAKE_AR=$(command -v $AR)"
-    prependToVar cmakeFlags "-DCMAKE_RANLIB=$(command -v $RANLIB)"
-    prependToVar cmakeFlags "-DCMAKE_STRIP=$(command -v $STRIP)"
+    prependToVar cmakeFlags "-DCMAKE_AR=$(command -v "$AR")"
+    prependToVar cmakeFlags "-DCMAKE_RANLIB=$(command -v "$RANLIB")"
+    prependToVar cmakeFlags "-DCMAKE_STRIP=$(command -v "$STRIP")"
 
     # on macOS we want to prefer Unix-style headers to Frameworks
     # because we usually do not package the framework

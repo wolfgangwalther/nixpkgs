@@ -6,6 +6,6 @@ NIX_CFLAGS_COMPILE="${NIX_CFLAGS_COMPILE:-} -frandom-seed=$(
     randSeed=${NIX_OUTPATH_USED_AS_RANDOM_SEED:-$out}
     outbase="${randSeed##*/}"
     randomseed="${outbase:0:10}"
-    echo $randomseed
+    echo "$randomseed"
 )"
 export NIX_CFLAGS_COMPILE

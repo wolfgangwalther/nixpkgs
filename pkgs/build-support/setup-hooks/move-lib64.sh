@@ -11,12 +11,12 @@ _moveLib64() {
     if [ "${dontMoveLib64-}" = 1 ]; then return; fi
     if [ ! -e "$prefix/lib64" -o -L "$prefix/lib64" ]; then return; fi
     echo "moving $prefix/lib64/* to $prefix/lib"
-    mkdir -p $prefix/lib
+    mkdir -p "$prefix"/lib
     shopt -s dotglob
     for i in $prefix/lib64/*; do
-        mv --no-clobber "$i" $prefix/lib
+        mv --no-clobber "$i" "$prefix"/lib
     done
     shopt -u dotglob
-    rmdir $prefix/lib64
-    ln -s lib $prefix/lib64
+    rmdir "$prefix"/lib64
+    ln -s lib "$prefix"/lib64
 }

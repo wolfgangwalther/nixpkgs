@@ -1,7 +1,7 @@
 #! /bin/sh -eu
 
-export NIX_PATH=nixpkgs=$(dirname $(readlink -f $0))/../../../..
-export NIXOS_CONFIG=$(dirname $(readlink -f $0))/../../../modules/virtualisation/azure-image.nix
+export NIX_PATH=nixpkgs=$(dirname $(readlink -f "$0"))/../../../..
+export NIXOS_CONFIG=$(dirname $(readlink -f "$0"))/../../../modules/virtualisation/azure-image.nix
 export TIMESTAMP=$(date +%Y%m%d%H%M)
 
 nix-build '<nixpkgs/nixos>' \

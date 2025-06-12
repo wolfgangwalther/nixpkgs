@@ -66,8 +66,8 @@ scion-pki certificate create --not-before="1970-01-01T00:00:00Z" --not-after="21
 
 for i in {1..5}
 do
-  mkdir -p $out/AS$i
-  cp AS$i/cp-as.{key,pem} $out/AS$i
+  mkdir -p "$out"/AS"$i"
+  cp AS"$i"/cp-as.{key,pem} "$out"/AS"$i"
 done
 
-mv *.trc $out
+mv *.trc "$out"

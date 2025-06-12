@@ -24,7 +24,7 @@ fi
 extension_ver=$(curl "https://github.com/$owner/$repo/releases/download/$ver/rust-analyzer-linux-x64.vsix" -L |
     bsdtar -xf - --to-stdout extension/package.json | # Use bsdtar to extract vsix(zip).
     jq --raw-output '.version')
-echo -n $extension_ver > version.txt
+echo -n "$extension_ver" > version.txt
 echo "Extension version: $extension_ver"
 
 echo "Remember to also update the releaseTag and hash in default.nix!"

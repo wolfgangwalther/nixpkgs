@@ -78,7 +78,7 @@ print_runtime_dep() {
   local depDesc="$3"
 
   local urlRaw=$(cat "$extPackageJSONStorePath" | jq -r --arg desc "$depDesc" '.runtimeDependencies[] | select(.description == $desc) | .url')
-  local url=$(echo $urlRaw | xargs curl -Ls -o /dev/null -w %{url_effective})
+  local url=$(echo "$urlRaw" | xargs curl -Ls -o /dev/null -w %{url_effective})
 
   local urlRawVarStr="${outName}_urlRaw='$urlRaw'"
   local urlVarStr="${outName}_url='$url'"

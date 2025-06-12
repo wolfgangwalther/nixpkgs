@@ -1,4 +1,4 @@
-source $mirrorsFile
+source "$mirrorsFile"
 
 curlVersion=$(curl -V | head -1 | cut -d' ' -f2)
 
@@ -60,7 +60,7 @@ finish() {
     set +o noglob
 
     if [[ $executable == "1" ]]; then
-      chmod +x $downloadedFile
+      chmod +x "$downloadedFile"
     fi
 
     if [ -z "$skipPostFetch" ]; then
@@ -133,7 +133,7 @@ urls="$urls2"
 set +o noglob
 
 if test -n "$showURLs"; then
-    echo "$urls" > $out
+    echo "$urls" > "$out"
     exit 0
 fi
 

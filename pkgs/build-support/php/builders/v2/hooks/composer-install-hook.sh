@@ -20,10 +20,10 @@ composerInstallConfigureHook() {
         exit 1
     fi
 
-    install -Dm644 ${composerVendor}/composer.json .
+    install -Dm644 "${composerVendor}"/composer.json .
 
     if [[ -f "${composerVendor}/composer.lock" ]]; then
-        install -Dm644 ${composerVendor}/composer.lock .
+        install -Dm644 "${composerVendor}"/composer.lock .
     fi
 
     if [[ -f "composer.lock" ]]; then
@@ -52,7 +52,7 @@ composerInstallCheckHook() {
 composerInstallInstallHook() {
     echo "Executing composerInstallInstallHook"
 
-    cp -ar ${composerVendor}/* .
+    cp -ar "${composerVendor}"/* .
 
     # Copy the relevant files only in the store.
     mkdir -p "$out"/share/php/"${pname}"

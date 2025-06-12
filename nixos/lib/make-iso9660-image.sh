@@ -64,7 +64,7 @@ done
 
 
 # Add the closures of the top-level store objects.
-for i in $(< $closureInfo/store-paths); do
+for i in $(< "$closureInfo"/store-paths); do
     addPath "${i:1}" "$i"
 done
 
@@ -77,7 +77,7 @@ fi
 # Also include a manifest of the closures in a format suitable for
 # nix-store --load-db.
 if [[ ${#objects[*]} != 0 ]]; then
-    cp $closureInfo/registration nix-path-registration
+    cp "$closureInfo"/registration nix-path-registration
     addPath "nix-path-registration" "nix-path-registration"
 fi
 
@@ -87,20 +87,20 @@ for ((n = 0; n < ${#objects[*]}; n++)); do
     object=${objects[$n]}
     symlink=${symlinks[$n]}
     if test "$symlink" != "none"; then
-        mkdir -p $(dirname ./$symlink)
-        ln -s $object ./$symlink
+        mkdir -p $(dirname ./"$symlink")
+        ln -s "$object" ./"$symlink"
         addPath "$symlink" "./$symlink"
     fi
 done
 
-mkdir -p $out/iso
+mkdir -p "$out"/iso
 
 # daed2280-b91e-42c0-aed6-82c825ca41f3 is an arbitrary namespace, to prevent
 # independent applications from generating the same UUID for the same value.
 # (the chance of that being problematic seem pretty slim here, but that's how
 # version-5 UUID's work)
 xorriso="xorriso
- -boot_image any gpt_disk_guid=$(uuid -v 5 daed2280-b91e-42c0-aed6-82c825ca41f3 $out | tr -d -)
+ -boot_image any gpt_disk_guid=$(uuid -v 5 daed2280-b91e-42c0-aed6-82c825ca41f3 "$out" | tr -d -)
  -volume_date all_file_dates =$SOURCE_DATE_EPOCH
  -as mkisofs
  -iso-level 3
@@ -118,18 +118,18 @@ xorriso="xorriso
  --sort-weight 0 /
 "
 
-$xorriso -output $out/iso/$isoName
+$xorriso -output "$out"/iso/"$isoName"
 
 if test -n "$compressImage"; then
     echo "Compressing image..."
-    zstd -T$NIX_BUILD_CORES --rm $out/iso/$isoName
+    zstd -T"$NIX_BUILD_CORES" --rm "$out"/iso/"$isoName"
 fi
 
-mkdir -p $out/nix-support
-echo $system > $out/nix-support/system
+mkdir -p "$out"/nix-support
+echo "$system" > "$out"/nix-support/system
 
 if test -n "$compressImage"; then
-    echo "file iso $out/iso/$isoName.zst" >> $out/nix-support/hydra-build-products
+    echo "file iso $out/iso/$isoName.zst" >> "$out"/nix-support/hydra-build-products
 else
-    echo "file iso $out/iso/$isoName" >> $out/nix-support/hydra-build-products
+    echo "file iso $out/iso/$isoName" >> "$out"/nix-support/hydra-build-products
 fi

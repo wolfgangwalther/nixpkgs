@@ -19,8 +19,8 @@ trap clean_up EXIT SIGINT SIGTERM
 PACKAGES="$TMP/packages"
 SRC_RW="$TMP/src"
 
-mkdir -p $SRC_RW
-mkdir -p $PACKAGES
+mkdir -p "$SRC_RW"
+mkdir -p "$PACKAGES"
 
 
 VER=$(curl -s "https://api.github.com/repos/microsoft/artifacts-credprovider/releases/latest" | jq -r .tag_name | grep -oP '\d+\.\d+\.\d+' )
@@ -29,7 +29,7 @@ HASH=$(nix-hash --to-sri --type sha256 "$(nix-prefetch-git --url $URL --rev "v$V
 sed -i "s/version = \".*\"/version = \"$VER\"/" "$NIX_DRV"
 sed -i "s#sha256 = \"sha256-.\{44\}\"#sha256 = \"$HASH\"#" "$NIX_DRV"
 
-nix-prefetch-git --url $URL --rev "v$VER" --out $SRC_RW --builder --quiet
-rm $SRC_RW/nuget.config
-dotnet restore "$SRC_RW/MicrosoftCredentialProvider.sln" --packages $PACKAGES -r:linux-x64
-nuget-to-nix $PACKAGES > deps.nix
+nix-prefetch-git --url $URL --rev "v$VER" --out "$SRC_RW" --builder --quiet
+rm "$SRC_RW"/nuget.config
+dotnet restore "$SRC_RW/MicrosoftCredentialProvider.sln" --packages "$PACKAGES" -r:linux-x64
+nuget-to-nix "$PACKAGES" > deps.nix

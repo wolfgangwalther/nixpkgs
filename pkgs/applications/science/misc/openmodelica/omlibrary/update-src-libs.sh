@@ -7,10 +7,10 @@ chko() {
   (
     T=`mktemp -d`
     trap "rm -rf $T" EXIT INT PIPE
-    cd $T
+    cd "$T"
     cat >check.nix <<EOF
 with import <nixpkgs> {};
-fetchgit `cat $CWD/../mkderivation/src-main.nix`
+fetchgit `cat "$CWD"/../mkderivation/src-main.nix`
 EOF
     nix-build check.nix
     cat result/libraries/Makefile.libs
@@ -32,8 +32,8 @@ chko |
 grep checkout-git.sh |
 tr \' \" |
 while read NM TGT URL BR REV ; do
-  echo Trying $TGT $URL $REV >&2
-  getsha256 $URL $REV >> $OUT || exit 1
+  echo Trying "$TGT" "$URL" "$REV" >&2
+  getsha256 "$URL" "$REV" >> $OUT || exit 1
 done
 
 echo ']' >> $OUT

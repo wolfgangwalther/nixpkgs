@@ -10,10 +10,10 @@ fossil clone -A nobody "$url" fossil-clone.fossil
 
 mkdir fossil-clone
 WORKDIR=$(pwd)
-mkdir $out
-pushd $out
+mkdir "$out"
+pushd "$out"
 fossil open "$WORKDIR/fossil-clone.fossil" "$rev"
 popd
 
 # Just nuke the checkout file.
-rm $out/.fslckout
+rm "$out"/.fslckout
