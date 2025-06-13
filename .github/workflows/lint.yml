@@ -91,6 +91,7 @@ jobs:
           # Force terminal colors to be enabled. The library that `nixpkgs-vet` uses respects https://bixense.com/clicolors/
           CLICOLOR_FORCE: 1
         run: |
+          echo "::error file=.github/workflows/lint.yml,line=94,endLine=94,col=11,endColumn=143,title=A test::Great stuff%0AOn multiple lines"
           if nix-build untrusted/ci -A nixpkgs-vet --arg base "./trusted" --arg head "./untrusted"; then
             exit 0
           else
