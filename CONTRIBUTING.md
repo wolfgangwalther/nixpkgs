@@ -1,5 +1,5 @@
 # Contributing to Nixpkgs
-
+TEST
 This document is for people wanting to contribute to Nixpkgs.
 This involves changes that are proposed using [GitHub](https://github.com) [pull requests](https://docs.github.com/pull-requests) to the [Nixpkgs repository](https://github.com/nixos/nixpkgs).
 
