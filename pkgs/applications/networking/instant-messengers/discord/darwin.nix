@@ -9,10 +9,10 @@
   lib,
   undmg,
   makeWrapper,
-  writeScript,
   python3,
   runCommand,
   branch,
+  updateScript,
   withOpenASAR ? false,
   openasar,
   withVencord ? false,
@@ -91,17 +91,6 @@ stdenv.mkDerivation {
 
   passthru = {
     # make it possible to run disableBreakingUpdates standalone
-    inherit disableBreakingUpdates;
-    updateScript = writeScript "discord-update-script" ''
-      #!/usr/bin/env nix-shell
-      #!nix-shell -i bash -p curl gnugrep common-updater-scripts
-      set -x
-      set -eou pipefail;
-      url=$(curl -sI -o /dev/null -w '%header{location}' "https://discord.com/api/download/${branch}?platform=osx&format=dmg")
-      version=$(echo $url | grep -oP '/\K(\d+\.){2}\d+')
-      update-source-version ${
-        lib.optionalString (!stdenv.buildPlatform.isDarwin) "pkgsCross.aarch64-darwin."
-      }${pname} "$version" --file=./pkgs/applications/networking/instant-messengers/discord/default.nix --version-key=${branch}
-    '';
+    inherit disableBreakingUpdates updateScript;
   };
 }

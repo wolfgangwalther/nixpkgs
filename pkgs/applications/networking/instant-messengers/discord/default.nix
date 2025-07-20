@@ -3,6 +3,7 @@
   fetchurl,
   lib,
   stdenv,
+  writeScript,
 }:
 let
   versions =
@@ -72,6 +73,24 @@ let
         src =
           (srcs version).${stdenv.hostPlatform.system}.${branch}
             or (throw "${stdenv.hostPlatform.system} not supported on ${branch}");
+
+        updateScript = writeScript "discord-update-script" ''
+          #!/usr/bin/env nix-shell
+          #!nix-shell -i bash -p curl gnugrep common-updater-scripts
+          set -euo pipefail
+
+          # Linux
+          url=$(curl -sI -o /dev/null -w '%header{location}' "https://discord.com/api/download/${branch}?platform=linux&format=tar.gz")
+          version=$(echo $url | grep -oP '/\K(\d+\.){2}\d+')
+          update-source-version "pkgsCross.gnu64.${pname}" "$version" \
+            --file=./pkgs/applications/networking/instant-messengers/discord/default.nix --version-key=${branch}
+
+          # Darwin
+          url=$(curl -sI -o /dev/null -w '%header{location}' "https://discord.com/api/download/${branch}?platform=osx&format=dmg")
+          version=$(echo $url | grep -oP '/\K(\d+\.){2}\d+')
+          update-source-version "pkgsCross.aarch64-darwin.${pname}" "$version" \
+            --file=./pkgs/applications/networking/instant-messengers/discord/default.nix --version-key=${branch}
+        '';
 
         meta = {
           description = "All-in-one cross-platform voice and text chat for gamers";

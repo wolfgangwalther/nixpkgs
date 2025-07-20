@@ -16400,7 +16400,7 @@ with pkgs;
   inherit
     (import ../applications/networking/instant-messengers/discord {
       inherit lib stdenv;
-      inherit (pkgs) callPackage fetchurl;
+      inherit (pkgs) callPackage fetchurl writeScript;
     })
     discord
     discord-ptb
