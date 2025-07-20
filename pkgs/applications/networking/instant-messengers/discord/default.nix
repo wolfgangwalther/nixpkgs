@@ -1,5 +1,4 @@
 {
-  branch ? "stable",
   callPackage,
   fetchurl,
   lib,
@@ -21,8 +20,8 @@ let
         canary = "0.0.823";
         development = "0.0.96";
       };
-  version = versions.${branch};
-  srcs = rec {
+
+  srcs = version: rec {
     x86_64-linux = {
       stable = fetchurl {
         url = "https://stable.dl2.discordapp.net/apps/linux/${version}/discord-${version}.tar.gz";
@@ -61,68 +60,63 @@ let
     };
     aarch64-darwin = x86_64-darwin;
   };
-  src =
-    srcs.${stdenv.hostPlatform.system}.${branch}
-      or (throw "${stdenv.hostPlatform.system} not supported on ${branch}");
 
-  meta = {
-    description = "All-in-one cross-platform voice and text chat for gamers";
-    downloadPage = "https://discordapp.com/download";
-    homepage = "https://discordapp.com/";
-    license = lib.licenses.unfree;
-    mainProgram = "discord";
-    maintainers = with lib.maintainers; [
-      artturin
-      donteatoreo
-      infinidoge
-      jopejoe1
-      Scrumplex
-    ];
-    platforms = [
-      "x86_64-linux"
-      "x86_64-darwin"
-      "aarch64-darwin"
-    ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-  };
-  package = if stdenv.hostPlatform.isLinux then ./linux.nix else ./darwin.nix;
+  mkPackage =
+    pname:
+    { branch, binaryName, ... }@attrs:
+    callPackage (if stdenv.hostPlatform.isLinux then ./linux.nix else ./darwin.nix) (
+      attrs
+      // rec {
+        inherit pname;
+        version = versions.${branch};
+        src =
+          (srcs version).${stdenv.hostPlatform.system}.${branch}
+            or (throw "${stdenv.hostPlatform.system} not supported on ${branch}");
 
-  packages = (
-    builtins.mapAttrs
-      (
-        _: value:
-        callPackage package (
-          value
-          // {
-            inherit src version branch;
-            meta = meta // {
-              mainProgram = value.binaryName;
-            };
-          }
-        )
-      )
-      {
-        stable = {
-          pname = "discord";
-          binaryName = "Discord";
-          desktopName = "Discord";
-        };
-        ptb = rec {
-          pname = "discord-ptb";
-          binaryName = if stdenv.hostPlatform.isLinux then "DiscordPTB" else desktopName;
-          desktopName = "Discord PTB";
-        };
-        canary = rec {
-          pname = "discord-canary";
-          binaryName = if stdenv.hostPlatform.isLinux then "DiscordCanary" else desktopName;
-          desktopName = "Discord Canary";
-        };
-        development = rec {
-          pname = "discord-development";
-          binaryName = if stdenv.hostPlatform.isLinux then "DiscordDevelopment" else desktopName;
-          desktopName = "Discord Development";
+        meta = {
+          description = "All-in-one cross-platform voice and text chat for gamers";
+          downloadPage = "https://discordapp.com/download";
+          homepage = "https://discordapp.com/";
+          license = lib.licenses.unfree;
+          mainProgram = binaryName;
+          maintainers = with lib.maintainers; [
+            artturin
+            donteatoreo
+            infinidoge
+            jopejoe1
+            Scrumplex
+          ];
+          platforms = [
+            "x86_64-linux"
+            "x86_64-darwin"
+            "aarch64-darwin"
+          ];
+          sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
         };
       }
-  );
+    );
+
+  packages = {
+    discord = {
+      branch = "stable";
+      binaryName = "Discord";
+      desktopName = "Discord";
+    };
+    discord-ptb = rec {
+      branch = "stable";
+      binaryName = if stdenv.hostPlatform.isLinux then "DiscordPTB" else desktopName;
+      desktopName = "Discord PTB";
+    };
+    discord-canary = rec {
+      branch = "canary";
+      binaryName = if stdenv.hostPlatform.isLinux then "DiscordCanary" else desktopName;
+      desktopName = "Discord Canary";
+    };
+    discord-development = rec {
+      branch = "development";
+      binaryName = if stdenv.hostPlatform.isLinux then "DiscordDevelopment" else desktopName;
+      desktopName = "Discord Development";
+    };
+  };
 in
-packages.${branch}
+builtins.mapAttrs mkPackage packages
