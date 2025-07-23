@@ -3,8 +3,12 @@ let
 in
 {
   system ? builtins.currentSystem,
+  config ? {
+    permittedInsecurePackages = [ "nix-2.3.18" ];
+  },
 
   nixpkgs ? null,
+  nixPath ? "nixVersions.latest",
 }:
 let
   nixpkgs' =
@@ -17,11 +21,7 @@ let
       nixpkgs;
 
   pkgs = import nixpkgs' {
-    inherit system;
-    config = {
-      permittedInsecurePackages = [ "nix-2.3.18" ];
-    };
-    overlays = [ ];
+    inherit config system;
   };
 
   fmt =
@@ -115,7 +115,7 @@ rec {
   # (nixVersions.stable and Lix) here somehow at some point to ensure we don't
   # have eval divergence.
   eval = pkgs.callPackage ./eval {
-    nix = pkgs.nixVersions.latest;
+    nix = pkgs.lib.getAttrFromPath (pkgs.lib.splitString "." nixPath) pkgs;
   };
 
   # CI jobs

@@ -46,3 +46,4 @@ jobs:
     with:
       mergedSha: ${{ github.sha }}
       systems: ${{ needs.prepare.outputs.systems }}
+      versions: ''

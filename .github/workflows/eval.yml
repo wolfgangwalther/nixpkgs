@@ -11,6 +11,9 @@ on:
       systems:
         required: true
         type: string
+      versions:
+        required: true
+        type: string
     secrets:
       OWNER_APP_PRIVATE_KEY:
         required: false
@@ -28,7 +31,13 @@ jobs:
       fail-fast: false
       matrix:
         system: ${{ fromJSON(inputs.systems) }}
-    name: ${{ matrix.system }}
+        version:
+          - "" # Default Eval triggering rebuild labels and such.
+          - ${{ fromJSON(inputs.versions || '[]') }} # Only for ci/pinned.json updates.
+    # Failures for versioned Evals will be collected in a separate job below
+    # to not interrupt main Eval's compare step.
+    continue-on-error: ${{ matrix.version != '' }}
+    name: ${{ matrix.system }}${{ matrix.version && format(' @ {0}', matrix.version) || '' }}
     outputs:
       targetRunId: ${{ steps.targetRunId.outputs.targetRunId }}
     steps:
@@ -53,17 +62,19 @@ jobs:
       - name: Evaluate the ${{ matrix.system }} output paths for all derivation attributes
         env:
           MATRIX_SYSTEM: ${{ matrix.system }}
+          MATRIX_VERSION: ${{ matrix.version || 'nixVersions.latest' }}
         run: |
           nix-build untrusted/ci -A eval.singleSystem \
             --argstr evalSystem "$MATRIX_SYSTEM" \
             --arg chunkSize 8000 \
+            --argstr nixPath "$MATRIX_VERSION" \
             --out-link merged
           # If it uses too much memory, slightly decrease chunkSize
 
       - name: Upload the output paths and eval stats
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: merged-${{ matrix.system }}
+          name: ${{ matrix.version && format('{0}-', matrix.version) || '' }}merged-${{ matrix.system }}
           path: merged/*
 
       - name: Log current API rate limits
@@ -142,7 +153,7 @@ jobs:
         if: steps.targetRunId.outputs.targetRunId
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: diff-${{ matrix.system }}
+          name: ${{ matrix.version && format('{0}-', matrix.version) || '' }}diff-${{ matrix.system }}
           path: diff/*
 
   compare:
@@ -229,6 +240,53 @@ jobs:
               description,
               target_url
             })
+
+  # Creates a matrix of Eval performance for various versions and systems.
+  report:
+    runs-on: ubuntu-24.04-arm
+    needs: [eval]
+    if: inputs.versions
+    steps:
+      - name: Download output paths and eval stats for all versions
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          pattern: "*-diff-*"
+          path: versions
+
+      - name: Add version comparison table to job summary
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          SYSTEMS: ${{ inputs.systems }}
+          VERSIONS: ${{ inputs.versions }}
+        with:
+          script: |
+            const { readFileSync } = require('node:fs')
+            const path = require('node:path')
+
+            const systems = JSON.parse(process.env.SYSTEMS)
+            const versions = JSON.parse(process.env.VERSIONS)
+
+            core.addTable([].concat([
+                systems.map(system => ({ data: system, header: true }))
+              ], versions.map(version =>
+                systems.map(system => {
+                  try {
+                    const artifact = path.join('versions', `${version}-diff-${system}`)
+                    const sec = readFileSync(path.join(artifact, 'after', system, 'total-time'), 'utf-8')
+                    const diff = JSON.parse(readFileSync(path.join(artifact, system, 'diff.json'), 'utf-8'))
+                    if (diff.added + diff.removed + diff.changed + diff.rebuilds > 0) {
+                      core.setFailed(`${version} on ${system} has changed outpaths!\nNote: Please make sure to update ci/pinned.json separately from changes to other packages.`)
+                      return { data: ':x:' }
+                    }
+                    const time = `${(sec - sec % 60) / 60}:${sec % 60}`
+                    return { data: time }
+                  } catch {
+                    core.warning(`${version} on ${system} did not produce artifact.`)
+                    return { data: ':warning:' }
+                  }
+                })
+              ))
+            )
 
   misc:
     if: ${{ github.event_name != 'push' }}
