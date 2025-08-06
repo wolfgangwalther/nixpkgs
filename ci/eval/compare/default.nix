@@ -73,11 +73,11 @@ let
     ;
 
   # Attrs
-  # - keys: "added", "changed" and "removed"
+  # - keys: "added", "changed", "removed" and "rebuilds"
   # - values: lists of `packagePlatformPath`s
   diffAttrs = builtins.fromJSON (builtins.readFile "${combinedDir}/combined-diff.json");
 
-  rebuilds = diffAttrs.added ++ diffAttrs.changed;
+  rebuilds = diffAttrs.rebuilds;
   rebuildsPackagePlatformAttrs = convertToPackagePlatformAttrs rebuilds;
 
   changed-paths =
@@ -90,7 +90,7 @@ let
     in
     writeText "changed-paths.json" (
       builtins.toJSON {
-        attrdiff = lib.mapAttrs (_: extractPackageNames) diffAttrs;
+        attrdiff = lib.mapAttrs (_: extractPackageNames) { inherit (diffAttrs) added changed removed; };
         inherit
           rebuildsByPlatform
           rebuildsByKernel
