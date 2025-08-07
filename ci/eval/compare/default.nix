@@ -122,7 +122,7 @@ let
 in
 runCommand "compare"
   {
-    nativeBuildInputs = [
+    nativeBuildInputs = map lib.getBin [
       jq
       (python3.withPackages (
         ps: with ps; [
