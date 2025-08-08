@@ -266,7 +266,8 @@ jobs:
             const systems = JSON.parse(process.env.SYSTEMS)
             const versions = JSON.parse(process.env.VERSIONS)
 
-            core.addTable([].concat([
+            core.summary.addHeading('Lix/Nix version comparison')
+            core.summary.addTable([].concat([
                 systems.map(system => ({ data: system, header: true }))
               ], versions.map(version =>
                 systems.map(system => {
@@ -287,6 +288,9 @@ jobs:
                 })
               ))
             )
+            core.summary.addRaw('_Evaluation time in minutes:seconds without downloading dependencies._', true)
+            core.summary.addRaw('_:warning: Job did not report a result._', true)
+            core.summary.addRaw('_:x: Job produced different outpaths than the target branch._', true)
 
   misc:
     if: ${{ github.event_name != 'push' }}
