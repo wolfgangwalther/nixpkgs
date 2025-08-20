@@ -429,6 +429,7 @@ let
       installTargets = [ "install-world" ];
 
       postPatch = ''
+        #test5
         substituteInPlace "src/Makefile.global.in" --subst-var out
         substituteInPlace "src/common/config_info.c" --subst-var dev
         cat ${./pg_config.env.mk} >> src/common/Makefile
