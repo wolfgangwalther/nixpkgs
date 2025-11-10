@@ -30,7 +30,3 @@ runs:
         extraPullNames: nixpkgs-gha
         authToken: ${{ inputs.cachix-token }}
         pushFilter: '(-source$|-nixpkgs-tarball-|-single-chunk)'
-        # This is mostly the default taken from:
-        #   https://github.com/cachix/cachix-action/blob/master/src/main.ts#L26
-        # Only change is to explicitly disable restrict-eval, which we have enabled globally.
-        installCommand: nix-env --option restrict-eval false --quiet -j8 -iA cachix -f https://cachix.org/api/v1/install
