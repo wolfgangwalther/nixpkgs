@@ -7,13 +7,13 @@
 let
   orioledb-postgres = buildPostgresql rec {
     pname = "orioledb-postgres";
-    version = "17.18";
+    version = "17.19";
 
     src = fetchFromGitHub {
       owner = "orioledb";
       repo = "postgres";
-      tag = "patches17_18";
-      hash = "sha256-GlegSFtRrKIF+gueFWQiZZlCQJmo8Ols13yJzois0Vw=";
+      tag = "patches17_19";
+      hash = "sha256-AQqSWjPQy36Y1WsYY8ytEifHOozwthCXr1gGjJxGd1I=";
     };
 
     # Configure extracts the patch version from the git tag. This
