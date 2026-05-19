@@ -7,13 +7,13 @@
 let
   orioledb-postgres = buildPostgresql rec {
     pname = "orioledb-postgres";
-    version = "17.19";
+    version = "17.19-unstable-2026-05-17";
 
     src = fetchFromGitHub {
       owner = "orioledb";
       repo = "postgres";
-      tag = "patches17_19";
-      hash = "sha256-AQqSWjPQy36Y1WsYY8ytEifHOozwthCXr1gGjJxGd1I=";
+      rev = "15967dbe43f6a91554f7124698f0c51d147f096a";
+      hash = "sha256-AS4IuJW4prroyZTwhPRKAuok+IfH8pA2zE/H1hPcjVw=";
     };
 
     # Configure extracts the patch version from the git tag. This
@@ -21,7 +21,7 @@ let
     # the correctly patched postgresql version.
     postPatch = ''
       substituteInPlace configure \
-        --replace-fail "git describe --tags --exact-match" "echo '${src.tag}'"
+        --replace-fail "git describe --tags --exact-match" "echo 'patches17_19'"
     '';
 
     # orioledb seems to have made pg_rewind extensible somehow. For that reason,
