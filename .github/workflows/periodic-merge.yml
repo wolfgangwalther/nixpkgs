@@ -46,7 +46,7 @@ jobs:
         run: |
           # turn into bash array, split on space
           read -ra branches <<< "$branches"
-          git fetch --shallow-since="1 month ago" origin "${branches[@]}"
+          git fetch --shallow-since="12 month ago" origin "${branches[@]}"
           merge_base="$(git merge-base "refs/remotes/origin/${branches[0]}" "refs/remotes/origin/${branches[1]}")"
           echo "Found merge base: $merge_base" >&2
           echo "merge_base=$merge_base" >> "$GITHUB_OUTPUT"
