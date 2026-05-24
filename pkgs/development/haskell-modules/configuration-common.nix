@@ -287,6 +287,9 @@ with haskellLib;
   }) (doJailbreak super.language-haskell-extract);
 
   vector = overrideCabal (old: {
+    # 2026-05-16: allow QuickCheck 2.16
+    # https://github.com/haskell/vector/issues/562
+    jailbreak = true;
     # vector-doctest seems to be broken when executed via ./Setup test
     testTargets = [
       "vector-tests-O0"
@@ -345,15 +348,6 @@ with haskellLib;
     '';
   }) super.streamly-core;
 
-  # Work around tasty >= 1.5.4 parallelism breaking the test suite
-  criterion = appendPatches [
-    (pkgs.fetchpatch {
-      name = "criterion-tasty-1.5.4.patch";
-      url = "https://github.com/haskell/criterion/commit/d555422d1779434432489efbc19d75011226c3e6.patch";
-      hash = "sha256-VRSfdzT/mzdRSMQmmIeycuChvRN/VDhYsHJQb0bRMaA=";
-    })
-  ] super.criterion;
-
   # Avoid rebinding to the same port with tasty >= 1.5.4 parallelism
   # https://github.com/lpeterse/haskell-socket/pull/73
   socket = appendPatches [
@@ -405,14 +399,6 @@ with haskellLib;
   # There are numerical tests on random data, that may fail occasionally
   lapack = dontCheck super.lapack;
 
-  # fpr-calc test suite depends on random >= 1.3
-  # see https://github.com/IntersectMBO/lsm-tree/issues/797
-  bloomfilter-blocked =
-    lib.warnIf (lib.versionAtLeast self.random.version "1.3")
-      "haskellPackages.bloomfilter-blocked: dontCheck can potentially be removed"
-      dontCheck
-      super.bloomfilter-blocked;
-
   # Missing files necessary for test suite compilation
   # https://github.com/brandonchinn178/kdl-hs/issues/33
   kdl-hs = dontCheck super.kdl-hs;
@@ -458,10 +444,6 @@ with haskellLib;
   # Test files missing from sdist
   # https://github.com/sol/ghc-bench/issues/81
   ghc-bench = dontCheck super.ghc-bench;
-
-  # Needs QuickCheck >= 2.16
-  # https://github.com/input-output-hk/io-sim/issues/248
-  io-sim = dontCheck super.io-sim;
 
   # Test suites broken by hakyll 4.16, but lib is still okay
   # https://github.com/LaurentRDC/hakyll-images/issues/14
@@ -516,9 +498,12 @@ with haskellLib;
   # 2025-02-14: Too strict bounds on attoparsec < 0.14
   attoparsec-varword = doJailbreak (dontCheck super.attoparsec-varword);
 
-  # Fix t_iter test which fails randomly, but frequently. No upstream feedback so far.
-  # https://github.com/haskell/attoparsec/issues/232
   attoparsec = overrideCabal (drv: {
+    # 2025-05-17: allow QuickCheck 2.16
+    # https://github.com/haskell/attoparsec/issues/236
+    jailbreak = true;
+    # Fix t_iter test which fails randomly, but frequently. No upstream feedback so far.
+    # https://github.com/haskell/attoparsec/issues/232
     testFlags = drv.testFlags or [ ] ++ [
       "-p"
       "$0!=\"tests.buf.t_iter\""
@@ -704,13 +689,6 @@ with haskellLib;
           --replace-fail 'InstallDesktopFile $(PREFIX)/bin/git-annex' \
                          'InstallDesktopFile git-annex'
       '';
-
-      # Work around race condition in test suite exposed by tasty-1.5.4
-      # TODO(@sternenseemann): make testFlags arg usable with git-annex
-      preCheck = ''
-        ${drv.preCheck or ""}
-        appendToVar checkFlags -j1
-      '';
     }))
   ];
 
@@ -775,13 +753,6 @@ with haskellLib;
       includes = [ "src/Turtle/Prelude.hs" ];
     })
   ] super.turtle;
-
-  # Allow inspection-testing >= 0.6 in test suite
-  algebraic-graphs = appendPatch (pkgs.fetchpatch2 {
-    name = "algebraic-graphs-0.7-allow-inspection-testing-0.6.patch";
-    url = "https://github.com/snowleopard/alga/commit/d4e43fb42db05413459fb2df493361d5a666588a.patch";
-    hash = "sha256-feGEuALVJ0Zl8zJPIfgEFry9eH/MxA0Aw7zlDq0PC/s=";
-  }) super.algebraic-graphs;
 
   inspection-testing = overrideCabal (drv: {
     broken =
@@ -868,12 +839,6 @@ with haskellLib;
   xmlgen = dontCheck super.xmlgen;
   wai-cors = dontCheck super.wai-cors;
 
-  # Needs QuickCheck >= 2.16, but Stackage is currently on 2.15
-  integer-logarithms =
-    lib.warnIf (lib.versionAtLeast super.QuickCheck.version "2.16")
-      "override for haskellPackages.integer-logarithms may no longer be needed"
-      (dontCheck super.integer-logarithms);
-
   # Apply patch fixing an incorrect QuickCheck property which occasionally causes false negatives
   # https://github.com/Philonous/xml-picklers/issues/5
   xml-picklers = appendPatch (pkgs.fetchpatch {
@@ -885,36 +850,10 @@ with haskellLib;
   pandoc-crossref = lib.pipe super.pandoc-crossref [
     # https://github.com/lierdakil/pandoc-crossref/issues/492
     doJailbreak
-    # We are still using pandoc == 3.7.*
-    (appendPatch (
-      lib.warnIf (lib.versionAtLeast self.pandoc.version "3.8")
-        "haskellPackages.pandoc-crossref: remove revert of pandoc-3.8 patch"
-        pkgs.fetchpatch
-        {
-          name = "pandoc-crossref-revert-pandoc-3.8-highlight.patch";
-          url = "https://github.com/lierdakil/pandoc-crossref/commit/b0c35a59d5a802f6525407bfeb31699ffd0b4671.patch";
-          hash = "sha256-MIITL9Qr3+1fKf1sTwHzXPcYTt3YC+vr9CpMgqsBXlc=";
-          revert = true;
-        }
-    ))
   ];
 
   pandoc = overrideCabal (drv: {
     patches = drv.patches or [ ] ++ [
-      # Adjust test fixtures for djot >= 0.1.2.3, patch extracted from unrelated change.
-      (pkgs.fetchpatch {
-        name = "pandoc-djot-0.1.2.3.patch";
-        url = "https://github.com/jgm/pandoc/commit/643712ca70b924c0edcc059699aa1ee42234be34.patch";
-        hash = "sha256-khDkb1PzC0fTaWTq3T04UvgoI+XefOJMaTV1d3Du8BU=";
-        includes = [ "test/djot-reader.native" ];
-      })
-      # Adjust tests for skylighting-format-blaze-html >= 0.1.2
-      (pkgs.fetchpatch {
-        name = "pandoc-skylighting-format-blaze-html-0.1.2.patch";
-        url = "https://github.com/jgm/pandoc/commit/cab682ba58f2eb7e940d1af508e196ff6b1c1112.patch";
-        hash = "sha256-lpddKGa8xs+Lhi62HhBgV04fUq2kkippA1xX2/b2ukM=";
-        includes = [ "test/Tests/Writers/HTML.hs" ];
-      })
       # Resolve test suite race condition(s) due to tasty >= 1.5.4 and
       # inDirectory, https://github.com/jgm/pandoc/issues/11566 krank:ignore-line
       (pkgs.fetchpatch {
@@ -1101,9 +1040,6 @@ with haskellLib;
   # This packages compiles 4+ hours on a fast machine. That's just unreasonable.
   CHXHtml = dontDistribute super.CHXHtml;
 
-  # Avoid "QuickCheck >=2.3 && <2.10" dependency we cannot fulfill in lts-11.x.
-  test-framework = dontCheck super.test-framework;
-
   # Test suite won't compile against tasty-hunit 0.10.x.
   binary-parsers = dontCheck super.binary-parsers;
 
@@ -1220,9 +1156,6 @@ with haskellLib;
   # 2025-02-10: Too strict bounds on text < 2.1
   digestive-functors-blaze = doJailbreak super.digestive-functors-blaze;
 
-  # Too strict bound on QuickCheck <2.15
-  hgmp = doJailbreak super.hgmp;
-
   # Z3 removed aliases for boolean types in 4.12
   inherit
     (
@@ -1291,12 +1224,6 @@ with haskellLib;
 
   # The test suite runs for 20+ minutes on a very fast machine, which feels kinda disproportionate.
   prettyprinter = dontCheck super.prettyprinter;
-
-  hpc-codecov = overrideCabal (drv: {
-    # Work around test suite race condition due to tasty >= 1.5.4
-    # https://github.com/8c6794b6/hpc-codecov/issues/52
-    testFlags = drv.testFlags or [ ] ++ [ "-j1" ];
-  }) super.hpc-codecov;
 
   # sexpr is old, broken and has no issue-tracker. Let's fix it the best we can.
   sexpr = appendPatch ./patches/sexpr-0.2.1.patch (
@@ -1393,8 +1320,8 @@ with haskellLib;
     '';
   }) (addExtraLibrary self.QuickCheck super.Chart-tests);
 
-  # 2026-01-17: too strict bounds on QuickCheck < 2.15
-  # https://github.com/hasufell/lzma-static/pull/15
+  # 2026-05-18: too strict bounds on QuickCheck < 2.16
+  # https://github.com/hasufell/lzma-static/issues/16
   xz = doJailbreak super.xz;
 
   ghcup =
@@ -1579,23 +1506,60 @@ with haskellLib;
   # Break infinite recursion via optparse-applicative (alternatively, dontCheck syb)
   prettyprinter-ansi-terminal = dontCheck super.prettyprinter-ansi-terminal;
 
-  # Released version prohibits QuickCheck >= 2.15 at the moment
-  optparse-applicative = appendPatches [
-    (pkgs.fetchpatch2 {
-      name = "optparse-applicative-0.18.1-allow-QuickCheck-2.15.patch";
-      url = "https://github.com/pcapriotti/optparse-applicative/commit/2c2a39ed53e6339d8dc717efeb7d44f4c2b69cab.patch";
-      hash = "sha256-198TfBUR3ygPpvKPvtH69UmbMmoRagmzr9UURPr6Kj4=";
-    })
-  ] super.optparse-applicative;
+  # 2026-05-18: allow QuickCheck 2.16
+  # Already updated upstream, but not released on hackage, yet.
+  finite-typelits = warnAfterVersion "0.2.1.0" (doJailbreak super.finite-typelits);
+
+  # 2026-05-16: allow QuickCheck 2.16
+  # https://github.com/pcapriotti/optparse-applicative/issues/516
+  optparse-applicative = doJailbreak super.optparse-applicative;
+
+  # 2026-05-17: allow QuickCheck 2.16
+  # https://github.com/jaspervdj/psqueues/issues/67
+  psqueues = doJailbreak super.psqueues;
+
+  # 2026-05-17: allow QuickCheck 2.16
+  # https://github.com/fizruk/http-api-data/issues/157
+  http-api-data = doJailbreak super.http-api-data;
+
+  # 2026-05-17: allow QuickCheck 2.16
+  # https://github.com/Gabriella439/Haskell-Nix-Derivation-Library/issues/30
+  nix-derivation = doJailbreak super.nix-derivation;
+
+  # 2026-05-17: allow QuickCheck 2.16
+  # https://github.com/haskell-hvr/uuid/issues/101
+  uuid = doJailbreak super.uuid;
+
+  # 2026-05-17: allow QuickCheck 2.16
+  # https://github.com/haskell/fgl/issues/119
+  fgl = doJailbreak super.fgl;
+
+  # 2026-05-17: allow QuickCheck 2.16
+  # Sent Claude an email on 2026-05-18.
+  bitwise = doJailbreak super.bitwise;
+
+  # 2026-05-17: allow QuickCheck 2.16
+  # https://github.com/haskell-hvr/lzma/issues/45
+  lzma = doJailbreak super.lzma;
+
+  # 2026-05-17: allow QuickCheck 2.16
+  # https://github.com/snowleopard/alga/issues/324
+  algebraic-graphs = doJailbreak super.algebraic-graphs;
+
+  # 2026-05-18: allow QuickCheck 2.16
+  # https://github.com/haskellari/binary-instances/pull/34/changes#r3257818178
+  binary-instances = doJailbreak super.binary-instances;
+
+  # 2026-05-18: allow QuickCheck 2.16
+  # https://github.com/haskell/os-string/pull/42
+  os-string_2_0_10 = doJailbreak super.os-string_2_0_10;
 
   # chell-quickcheck doesn't work with QuickCheck >= 2.15 with no known fix yet
   # https://github.com/typeclasses/chell/issues/5
   system-filepath = dontCheck super.system-filepath;
   gnuidn = dontCheck super.gnuidn;
 
-  # Tests rely on `Int` being 64-bit: https://github.com/hspec/hspec/issues/431.
-  # Also, we need QuickCheck-2.14.x to build the test suite, which isn't easy in LTS-16.x.
-  # So let's not go there and just disable the tests altogether.
+  # Avoids infinite recursion
   hspec-core = dontCheck super.hspec-core;
 
   update-nix-fetchgit =
@@ -1817,12 +1781,6 @@ with haskellLib;
   # https://github.com/obsidiansystems/database-id/issues/1
   database-id-class = doJailbreak super.database-id-class;
 
-  # Allow granite >= 0.4
-  dataframe = lib.pipe super.dataframe [
-    (warnAfterVersion "0.5.0.1")
-    doJailbreak
-  ];
-
   # TODO: when (likely in 25.x) Stackage bumps random to 1.3, review
   dataframe-persistent = lib.pipe super.dataframe-persistent [
     doJailbreak # 2026-01-23: too strict bounds on dataframe >= 0.4
@@ -1953,8 +1911,7 @@ with haskellLib;
   hadolint = doJailbreak super.hadolint;
 
   # Too strict bounds on
-  # QuickCheck (<2.15): https://github.com/kapralVV/Unique/issues/12
-  # hashable (<1.5): https://github.com/kapralVV/Unique/issues/11#issuecomment-3088832168
+  # extra <= 1.8
   Unique = doJailbreak super.Unique;
 
   # Too strict bound on tasty-quickcheck (<0.11)
@@ -2149,7 +2106,7 @@ with haskellLib;
   # https://github.com/haskell-works/hw-string-parse/issues/43
   hw-string-parse = doJailbreak super.hw-string-parse;
 
-  # 2025-09-03: allow QuickCheck 2.15
+  # 2026-05-18: allow QuickCheck 2.16
   # https://github.com/haskell-works/hw-prim/issues/150
   hw-prim = lib.pipe super.hw-prim [
     (warnAfterVersion "0.6.3.2")
@@ -2464,22 +2421,6 @@ with haskellLib;
     })
   ] super.heist;
 
-  # 2025-09-03: Disable tests until this is solved:
-  # https://github.com/clash-lang/ghc-typelits-extra/issues/60
-  ghc-typelits-extra = lib.pipe super.ghc-typelits-extra [
-    (warnAfterVersion "0.4.8")
-    dontCheck
-  ];
-
-  # 2025-09-16: 0.5 adds support for GHC 9.12 and doesn't actually seem to contain a
-  # breaking change, so we can upgrade beyond Stackage.
-  # https://github.com/clash-lang/ghc-tcplugins-extra/pull/29#issuecomment-3299008674
-  # https://github.com/clash-lang/ghc-tcplugins-extra/compare/702dda2095c66c4f5148a749c8b7dbcc8a09f5c...v0.5.0
-  ghc-tcplugins-extra = doDistribute self.ghc-tcplugins-extra_0_5;
-  # 2025-09-11: Tests have been fixed in 0.7.12, but it requests ghc-tcplugins-extra >= 0.5
-  # which Stackage LTS won't update to, but we can.
-  ghc-typelits-natnormalise = doDistribute self.ghc-typelits-natnormalise_0_7_12;
-
   # calls ghc in tests
   # https://github.com/brandonchinn178/tasty-autocollect/issues/54
   tasty-autocollect = dontCheck super.tasty-autocollect;
@@ -2649,7 +2590,7 @@ with haskellLib;
     + (drv.postPatch or "");
   }) super.pdftotext;
 
-  # QuickCheck <2.15
+  # Allow QuickCheck 2.16
   # https://github.com/google/proto-lens/issues/403
   proto-lens-arbitrary = doJailbreak super.proto-lens-arbitrary;
 
@@ -2746,6 +2687,10 @@ with haskellLib;
   # 2025-04-09: jailbreak to allow hedgehog >= 1.5
   hw-int = warnAfterVersion "0.0.2.0" (doJailbreak super.hw-int);
 
+  # 2026-05-17: allow hedgehog 1.6
+  # https://github.com/hedgehogqa/haskell-hedgehog-classes/pull/65
+  hedgehog-classes = doJailbreak super.hedgehog-classes;
+
   # 2025-04-09: jailbreak to allow tasty-quickcheck >= 0.11
   bzlib = warnAfterVersion "0.5.2.0" (doJailbreak super.bzlib);
 
@@ -2777,7 +2722,6 @@ with haskellLib;
       ]
     ) super)
     what4
-    what4_1_7_3
     ;
 
   copilot-theorem = lib.pipe super.copilot-theorem [
@@ -2845,15 +2789,7 @@ with haskellLib;
       (doJailbreak super.monad-bayes);
 
   # 2025-04-13: jailbreak to allow th-abstraction >= 0.7
-  crucible = doJailbreak (
-    super.crucible.override {
-      what4 = self.what4_1_7_3;
-    }
-  );
-
-  crucible-llvm = super.crucible-llvm.override {
-    what4 = self.what4_1_7_3;
-  };
+  crucible = doJailbreak super.crucible;
 
   # Test suite invokes cabal-install in a way incompatible with our generic builder
   # (i.e. tries to re-use the ghc package db / environment from dist-newstyle).
@@ -3421,43 +3357,4 @@ with haskellLib;
       )
     ];
   }
-)
-
-# 2026-04-01: IHP packages need hasql >= 1.10 (via hasql-mapping).
-# The scope renames hasql-stack attrs to the 1.10 line and unmarks
-# hasql-mapping, which only builds against hasql >= 1.10 and so stays
-# broken at the top level. dontCheck for tests that need a live
-# PostgreSQL lives in configuration-nix.nix on the versioned attrs.
-// (
-  let
-    ihpHasqlScope = self: super: {
-      hasql = doDistribute super.hasql_1_10_3;
-      hasql-dynamic-statements = doDistribute super.hasql-dynamic-statements_0_5_1;
-      hasql-notifications = doDistribute super.hasql-notifications_0_2_5_0;
-      hasql-pool = doDistribute super.hasql-pool_1_4_2;
-      hasql-transaction = doDistribute super.hasql-transaction_1_2_2;
-      postgresql-binary = doDistribute super.postgresql-binary_0_15_0_1;
-      text-builder = doDistribute super.text-builder_1_0_0_5;
-      hasql-mapping = doDistribute (unmarkBroken super.hasql-mapping);
-      postgresql-simple-postgresql-types = doDistribute (
-        unmarkBroken super.postgresql-simple-postgresql-types
-      );
-    };
-
-    ihpPackages = [
-      "ihp"
-      "ihp-datasync"
-      "ihp-graphql"
-      "ihp-hspec"
-      "ihp-ide"
-      "ihp-job-dashboard"
-      "ihp-migrate"
-      "ihp-pglistener"
-      "ihp-ssc"
-      "ihp-typed-sql"
-    ];
-  in
-  lib.genAttrs ihpPackages (
-    name: haskellLib.doDistribute (haskellLib.unmarkBroken (super.${name}.overrideScope ihpHasqlScope))
-  )
 )
